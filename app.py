@@ -10,6 +10,8 @@ import json
 from datetime import datetime
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+import urllib.parse  # Corrected import
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -48,13 +50,27 @@ def insert_query_log(userQuestion, sqlQuery=None, Response=None, exceptionMessag
     return insertDocument.inserted_id
 
 
-server = "DPLAP156\\SQLEXPRESS"  # Your SQL Server name
-database = 'custody-portal'  # Your database name
-username = 'sa'  # Your SQL Server username
+conn_str = (
+    "Driver={ODBC Driver 17 for SQL Server};"
+    "Server=tcp:blueberry-dbserver.database.windows.net,1433;"
+    "Database=blueberry-dataportal;"
+    "Uid=bbadmin;"
+    "Pwd=Delaplex#1234;"
+    "Encrypt=yes;"
+    "TrustServerCertificate=no;"
+    "Connection Timeout=30;"
+)
+
+# Encode the connection string
+conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
+
+server = "tcp:blueberry-dbserver.database.windows.net,1433;"  # Your SQL Server name
+database = 'blueberry-dataportal'  # Your database name
+username = 'bbadmin'  # Your SQL Server username
 password = 'Delaplex#1234'  # Your SQL Server password
 
-connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
-engine = create_engine(connection_string)
+#connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
+engine = create_engine(conn_url)
 
 @app.route("/", methods=["GET"])
 def home():
