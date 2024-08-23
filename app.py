@@ -21,13 +21,9 @@ openai.api_key = "34a6fe8ffcfa4b92ab4b6db1b959356d"
 openai.api_base = "https://blueberrysonar-open-ai.openai.azure.com/"
 openai.api_type = 'azure'
 openai.api_version = '2024-05-01-preview'
-deployment_id = "NNCPModel"
+deployment_id = "delaplexmodeldeploy"
+#deployment_id = "NNCPModel"
 
-# Database For Storing QueryLog
-#client = MongoClient("mongodb+srv://shreyash:shreyash@datalogging.tbeeh.mongodb.net/?retryWrites=true&w=majority&appName=DataLogging")
-#client = MongoClient("mongodb+srv://adminuser:Nagpur%40123@chatbotfeedbackcluster.my3pe.mongodb.net/?retryWrites=true&w=majority&appName=ChatBotFeedbackCluster")
-#DB = client['DataPortal']
-#collection = DB['QueryLog']
 # Database For Storing QueryLog
 client = MongoClient("mongodb+srv://adminuser:adminuser@chatbotfeedbackcluster.4eg40h5.mongodb.net/?retryWrites=true&w=majority&appName=ChatBotFeedbackCluster")
 DB = client['ChabotFeedback']
@@ -85,7 +81,25 @@ def home():
     </html>
     '''
 
+conversation_history = [
+    {
+        "role": "system", 
+        "content": "You are an assistant that converts natural language to SQL queries for SQL SERVER. give me SQL query only if user_query contains chart, table, or graph in it, else give a normal answer). Use 'HcpPatients' as the table name (do not use the LIMIT clause, use its SQL Server alternative)."
+    },
+    {
+        "role": "system", 
+        "content": "If asked about your purpose or similar question, state that you assist in providing data in various formats (charts, graphs, tables, or text) for easy and accessible understanding. and your name will be 'Sonar Chatbot'"
+    }
+    ]
 
+def tableDataGeneration(headers, rows):
+    formatted_rows = [[str(row[header]) for header in headers] for row in rows]
+    results = {
+            "headers": headers,
+            "rows": formatted_rows,
+            }
+    
+    return results
 
 @app.route("/query", methods=["POST"])
 @swag_from({
@@ -132,51 +146,55 @@ def home():
         }
     }
 })
-
 def query_db():
     user_query = request.json.get('query')
     user_query_lower = user_query.lower()
+    
+    global conversation_history
+    conversation_history.append({"role": "user", "content": f"user_query: {user_query}"})
         
     try:
         # Use OpenAI Chat API to convert user query to SQL query    
         response = openai.ChatCompletion.create(
             deployment_id=deployment_id,
-            messages=[
-                {"role": "system", "content": "You are an assistant that converts natural language to SQL queries for SQL SERVER(give me sql query only if user_query contains chart,table,graph in it else give normal answer).and use 'HcpPatients' as table name.(do not use limit clause on queries, use alternate of it.)"},
-                {"role": "system", "content": "If asked about your purpose or similar question to purpose, state that you assist in providing data in various formats (charts, graphs, tables, or text) for easy and accessible understanding."},
-                {"role": "user", "content": f"user_query: {user_query}"}
-            ],
-            max_tokens=150
+            messages=conversation_history
+            ,max_tokens=150
         )
         sql_query = response.choices[0].message['content'].strip()
-
+        conversation_history.append({"role": "assistant", "content": sql_query})
         
-        if 'text' in user_query_lower or not 'text' in user_query_lower and not any(term in user_query_lower for term in ['chart', 'graph', 'table']):
+        if len(conversation_history) > 15:
+            conversation_history = conversation_history[-15:]
+            
+            
+        if not any(term in sql_query for term in ['SELECT', 'WITH']):
             results = {"text":sql_query}
             id = insert_query_log(userQuestion=user_query,Response=sql_query)
             return jsonify({"results":results, "id":str(id)}),200
-
-        with engine.connect() as connection:
-            result = connection.execute(text(sql_query))
-            rows = [dict(row._mapping) for row in result]
-            headers = list(rows[0].keys()) if rows else []
         
-        if 'table' in user_query_lower:
+        else:
+            with engine.connect() as connection:
+                result = connection.execute(text(sql_query))
+                rows = [dict(row._mapping) for row in result]
+                headers = list(rows[0].keys()) if rows else []
+
+            if any(word in user_query_lower for word in ('chart', 'graph')):
+                chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
+                results = {
+                        "labels": [str(row[headers[0]]) for row in rows],
+                        "data": [str(row[headers[1]]) for row in rows],
+                        "type" : chartType,
+                    }
+
+                id = insert_query_log(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
+                return jsonify({"results":results, "id":str(id)}),200
+            
+
             formatted_rows = [[str(row[header]) for header in headers] for row in rows]
             results = {
                     "headers": headers,
                     "rows": formatted_rows,
-                    }
-            
-            id = insert_query_log(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
-            return jsonify({"results":results, "id":str(id)}),200
-        
-        if any(word in user_query_lower for word in ('chart', 'graph')):
-            results = {
-                    "labels": [str(row[headers[0]]) for row in rows],
-                    "data": [str(row[headers[1]]) for row in rows],
                 }
-            
             id = insert_query_log(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
             return jsonify({"results":results, "id":str(id)}),200
     
