@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from sqlalchemy import create_engine, text
 import openai
 import os
+import re
 import urllib.parse
 
 load_dotenv(".env")
@@ -25,13 +26,12 @@ conn_str = os.getenv('SQL_CONNECTION_STRING')
 conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
 engine = create_engine(conn_url)
 
-#SQL Server Configurations
 # server = "dPSYS125\\SQLEXPRESS"
 # database = "DataPortal"
-# username = "shreyash"
+# username= "shreyash"
 # password = "shreyash"
 # connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
-# engine = create_engine(connection_string)
+# engine = create_engine(connection_string) 
 
 
 def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=None, 
@@ -76,4 +76,19 @@ def saveFeedback(resID,feedback):
                 }
             }
         )
-    
+
+
+def findSqlQueryFromDB(userQuestion):
+    result = collection.find_one({"UserQuestion": userQuestion, "IsCorrect": True})
+    if result:
+        return result.get('SqlQuery')
+    else:
+        return None
+
+def extractSqlQueryFromResponse(response):
+    sql_pattern = r'(WITH|SELECT|INSERT|UPDATE|DELETE)[\s\S]+?(?=\s*;)'
+    matches = re.search(sql_pattern, response, re.IGNORECASE)
+    if matches:
+        return matches.group(0).strip()
+    else:
+        return None
