@@ -25,6 +25,14 @@ conn_str = os.getenv('SQL_CONNECTION_STRING')
 conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
 engine = create_engine(conn_url)
 
+#SQL Server Configurations
+# server = "dPSYS125\\SQLEXPRESS"
+# database = "DataPortal"
+# username = "shreyash"
+# password = "shreyash"
+# connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
+# engine = create_engine(connection_string)
+
 
 def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=None, 
                      isDataFetchedFromDB=False, isCorrect=None, feedbackDateTime=None):
@@ -53,8 +61,6 @@ def generateSqlQuery(conversation_history):
 
 
 def readSqlDatabse(sql_query):
-    # connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
-    # engine = create_engine(connection_string)
     with engine.connect() as connection:
         result = connection.execute(text(sql_query))
         rows = [dict(row._mapping) for row in result]
