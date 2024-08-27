@@ -18,7 +18,7 @@ def home():
 conversation_history = [
     {
         "role": "system", 
-        "content": "You are an assistant that converts natural language to correct SQL queries for SQL SERVER."
+        "content": "You are an expert assistant that converts natural language to correct SQL queries for SQL SERVER."
     }
     ]
 
