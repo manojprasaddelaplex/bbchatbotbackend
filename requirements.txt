@@ -8,7 +8,7 @@ charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 dnspython==2.6.1
-python-dotenv==1.0.0
+python-dotenv==1.0.1
 flasgger==0.9.7.1
 Flask==3.0.3
 Flask-Cors==4.0.1
@@ -43,5 +43,5 @@ tzdata==2024.1
 urllib3==2.2.2
 Werkzeug==3.0.4
 yarl==1.9.4
-urllib3==2.2.2
 gunicorn==20.1.0
+urllib3==2.2.2
