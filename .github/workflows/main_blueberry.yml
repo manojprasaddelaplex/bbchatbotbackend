@@ -39,7 +39,6 @@ jobs:
         with:
           name: python-app
           path: |
-          # release.zip
             . 
             !venv/
 
@@ -66,5 +65,4 @@ jobs:
         id: deploy-to-webapp
         with:
           app-name: 'blueberry'
-       #  slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_67F07459B80C44358AC17D1F88E46486 }}
