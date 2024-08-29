@@ -83,4 +83,6 @@ def extractSqlQueryFromResponse(response):
     if matches:
         return matches.group(0).strip()
     else:
+        if any(term in response for term in ['SELECT', 'WITH']):
+            return response
         return None
