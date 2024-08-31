@@ -4,7 +4,6 @@ from flask_cors import CORS
 from flasgger import Swagger, swag_from
 from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse
 from swaggerData import main_swagger, feedback_swagger
-from sqlalchemy.exc import SQLAlchemyError
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
@@ -19,13 +18,13 @@ conversation_history = [
     {
         "role": "system",
         "content": '''
-        You convert natural language into SQL queries for a SQL Server database. Use the schema:
-            PresentingComplaintHistory: [id, ReferralId, ComplaintOther, HistoryOfPresentingComplaint, CreatedDate, CreatedByUserId, PresentingComplaintId]
-            DetainedPersons: [Id, Forename, MiddleName, Surname, DateOfBirth, Gender, Postcode, Address1, Address2, Town, City, County, SexualOrientation, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Archived, IsHcpSide, Address3, Maintenance_GenderTypeId]
-            Referrals: [id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
-            PresentingComplaints: [Id, ReferralId, ComplaintOther, HistoryOfPresentingComplaint, CreatedDate]
-            Maintenance_BreachReasonType: [Id, Name, Value]
-        End queries with a semicolon. You are not allowed data modification tasks and keep normal answers short & sweet.
+        You are an assistant that converts natural language into SQL queries for a SQL Server database. The database has the following schema (table_name:column_names_list):
+            PresentingComplaintHistory: [id(int), ReferralId(int), ComplaintOther(nvarchar), HistoryOfPresentingComplaint(nvarchar), CreatedDate(datetimeoffset), CreatedByUserId(nvarchar), PresentingComplaintId(int)].
+            DetainedPersons: [Id(int), Forename(nvarchar), MiddleName(nvarchar), Surname(nvarchar), DateOfBirth(datetimeoffset), Gender(int), Postcode(nvarchar), Address1(nvarchar), Address2(nvarchar), Town(nvarchar), City(nvarchar), County(nvarchar), SexualOrientation(int), IsGenderSameAsRegisteredAtBirth(bit), SexualOrientationOther(nvarchar), Archived(bit), IsHcpSide(bit), Address3(nvarchar), Maintenance_GenderTypeId(int)].
+            Referrals: [id(int), ReferralDateTime(datetimeoffset), ReferredBy(nvarchar), CustodyNumber(nvarchar), RegistrationType(int), ReasonOfArrestOther(nvarchar), FmeRequired(bit), VerballyPhysicallyAbusive(bit), ThreatToFemaleStaff(bit), DateAddedToWaitingList(datetimeoffset), State(int), CreatedByUserId(nvarchar), RecipientDetails(nvarchar), ReferralDetails(nvarchar), ReferralCreatedDateTime(datetimeoffset), CustodyLocationId(int), DetainedPersonId(int), RequestedAssessmentOther(nvarchar), ReferralFrom(int), ProcessedByHCP(bit), CompletedByUserId(nvarchar), ReferralFromOther(nvarchar), PresentingComplaintId(int), DischargeDateTime(datetimeoffset), Discharged(bit), Intervention(int), LocationAfterDischarge(int), DischargeCompletedByUserId(nvarchar), ProcessedByUserId(nvarchar), LastAction(nvarchar), LastKpiCalculationValue(int), ReferralStatusUpdateDateTime(datetimeoffset), BreachReasonOther(nvarchar), IsHcpSide(bit), BreachReasonDateTime(datetimeoffset), WaitingListCompleteDateTime(datetimeoffset), RejectionDate(datetimeoffset), RejectionReason(int), RejectionReasonOther(nvarchar), ReferralInUpdatedByUserId(nvarchar), ReferralInUpdatedDateTime(datetimeoffset), OtherConcern(nvarchar), OtherLocation(nvarchar), Maintenance_RegistrationTypeId(int), LastKpiAssessmentCalculationValue(int), Maintenance_HcpRequiredTypeId(int), BreachReasonId(int), Maintenance_ReasonOfArrestTypeId(int), Maintenance_CellTypeId(int)].
+            PresentingComplaints: [Id(int), ReferralId(int), ComplaintOther(nvarchar), HistoryOfPresentingComplaint(nvarchar), CreatedDate(datetimeoffset)].
+            Maintenance_BreachReasonType: [Id(int), Name(nvarchar), Value(int)].            
+        Please provide only SQL query, Always end SQL query with a semicolon.
         '''
     }
     ]
@@ -53,18 +52,13 @@ def query_db():
             #return text
             if sql_query == None:
                 results = {"text":response}
-                id = insertQueryLog(userQuestion=user_query,Response=results)
+                id = insertQueryLog(userQuestion=user_query,Response=response)
                 return jsonify({"results":results, "id":str(id)}),200
                 
         
         conversation_history.append({"role": "assistant", "content": sql_query})
         headers, rows = readSqlDatabse(sql_query)
-        
-        if((len(headers) or len(rows)) == 0):
-            results = {"text":"Unfortunately, I found 0 records matching your search. Please try asking different question or adjust your search criteria."}
-            id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
-            return jsonify({"results":results, "id":str(id)}),200
-        
+        #returns data for chart and graph
         if any(word in user_query_lower for word in ('chart', 'graph')):
             chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
             results = {
@@ -85,13 +79,10 @@ def query_db():
     
     except openai.error.OpenAIError as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error":f"OpenAI Model Error: {str(e)}", "id":str(id)}), 500
-    except SQLAlchemyError as e:
-        id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error": f"I apologize for the inconvenience. It seems there was an error in the response related to the database tables or columns not being present in the data source. Is there anything else I can assist you with? Actual exception is: {str(e)}", "id": str(id)}), 500
+        return jsonify({"error":f"OpenAI API error: {str(e)}", "id":str(id)}), 500
     except Exception as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error":f"I apologize for the inconvenience. It seems there was an error in the response, Exception: {str(e)}", "id":str(id)}), 500
+        return jsonify({"error":f"Database query error: {str(e)}", "id":str(id)}), 500
     
     
 
@@ -110,4 +101,4 @@ def submit_feedback():
 
 # Run the Flask app
 if __name__ == "__main__":
-app.run(debug=True)
+    app.run(debug=True)
