@@ -19,13 +19,13 @@ conversation_history = [
     {
         "role": "system",
         "content": '''
-        You convert natural language into SQL queries for a SQL Server database. Use the schema:
+        You are a assistant who convert natural language into SQL queries for SQL SERVER. Use the schema:
             PresentingComplaintHistory: [id, ReferralId, ComplaintOther, HistoryOfPresentingComplaint, CreatedDate, CreatedByUserId, PresentingComplaintId]
             DetainedPersons: [Id, Forename, MiddleName, Surname, DateOfBirth, Gender, Postcode, Address1, Address2, Town, City, County, SexualOrientation, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Archived, IsHcpSide, Address3, Maintenance_GenderTypeId]
             Referrals: [id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
             PresentingComplaints: [Id, ReferralId, ComplaintOther, HistoryOfPresentingComplaint, CreatedDate]
             Maintenance_BreachReasonType: [Id, Name, Value]
-        End queries with a semicolon. You are not allowed data modification tasks and keep normal answers short & sweet.
+        End all queries with a semicolon. Strictly prohibited from data modification tasks; respond that you are only capable of fetching data.
         '''
     }
     ]
@@ -39,8 +39,8 @@ def query_db():
     global conversation_history
     conversation_history.append({"role": "user", "content": user_query})
     
-    if len(conversation_history) > 11:
-        conversation_history = [conversation_history[0]] + conversation_history[-10:]
+    if len(conversation_history) > 10:
+        conversation_history = conversation_history[-10:]
         
     try:
         sql_query = findSqlQueryFromDB(userQuestion=user_query)
@@ -88,7 +88,7 @@ def query_db():
         return jsonify({"error":f"OpenAI Model Error: {str(e)}", "id":str(id)}), 500
     except SQLAlchemyError as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error": f"I apologize for the inconvenience. It seems there was an error in the response related to the database tables or columns not being present in the data source. Is there anything else I can assist you with? Actual exception is: {str(e)}", "id": str(id)}), 500
+        return jsonify({"error": f"I apologize for the inconvenience. It seems there was an error in the response related to the database tables or columns not being present in the data source. Is there anything else I can assist you with? Exception: {str(e)}", "id": str(id)}), 500
     except Exception as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
         return jsonify({"error":f"I apologize for the inconvenience. It seems there was an error in the response, Exception: {str(e)}", "id":str(id)}), 500
