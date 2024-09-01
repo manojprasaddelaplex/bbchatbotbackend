@@ -22,9 +22,13 @@ DB = client['ChabotFeedback']
 collection = DB['BBChatBotOnline']
 
 #SQL Server Configurations
-conn_str = os.getenv('SQL_CONNECTION_STRING')
-conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
-engine = create_engine(conn_url)
+server = "SHREYASH\\SQLEXPRESS"  # Your SQL Server name
+database = 'DataPortal'  # Your database name
+username = 'sa'  # Your SQL Server username
+password = 'root'  # Your SQL Server password
+
+connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
+engine = create_engine(connection_string)
 
 def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=None, 
                      isDataFetchedFromDB=False, isCorrect=None, feedbackDateTime=None):
@@ -80,11 +84,9 @@ def findSqlQueryFromDB(userQuestion):
     return result['SqlQuery'] if result else None
 
 def extractSqlQueryFromResponse(response):
-    sql_pattern = r'(WITH|SELECT)[\s\S]+?(?=\s*;)'
+    sql_pattern = r'(WITH|SELECT)[\s\S]+?;'
     matches = re.search(sql_pattern, response, re.IGNORECASE)
     if matches:
         return matches.group(0).strip()
     else:
-        if any(term in response for term in ['SELECT', 'WITH']):
-            return response
         return None
