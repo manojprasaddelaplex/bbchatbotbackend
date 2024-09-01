@@ -22,13 +22,9 @@ DB = client['ChabotFeedback']
 collection = DB['BBChatBotOnline']
 
 #SQL Server Configurations
-server = "SHREYASH\\SQLEXPRESS"  # Your SQL Server name
-database = 'DataPortal'  # Your database name
-username = 'sa'  # Your SQL Server username
-password = 'root'  # Your SQL Server password
-
-connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
-engine = create_engine(connection_string)
+conn_str = os.getenv('SQL_CONNECTION_STRING')
+conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
+engine = create_engine(conn_url)
 
 def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=None, 
                      isDataFetchedFromDB=False, isCorrect=None, feedbackDateTime=None):
