@@ -50,15 +50,6 @@ def generateSqlQuery(conversation_history):
             messages=conversation_history,
             max_tokens=2000
         )
-    prompt_tokens = response['usage']['prompt_tokens']
-    response_tokens = response['usage']['completion_tokens']
-    total_tokens = response['usage']['total_tokens']
-
-    # Printing token usage information
-    print(f"\nPrompt tokens: {prompt_tokens}")
-    print(f"Response tokens: {response_tokens}")
-    print(f"Total tokens: {total_tokens}\n")
-    
     return response.choices[0].message['content'].strip()
 
 
