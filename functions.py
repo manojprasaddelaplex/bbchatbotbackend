@@ -23,6 +23,11 @@ collection = DB['BBChatBotOnline']
 
 #SQL Server Configurations
 conn_str = os.getenv('SQL_CONNECTION_STRING')
+#conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
+
+if isinstance(conn_str, bytes):
+    conn_str = conn_str.decode('utf-8')  # Convert bytes to string
+
 conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
 engine = create_engine(conn_url)
 
