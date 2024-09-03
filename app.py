@@ -55,35 +55,38 @@ def query_db():
             #return text
             if sql_query == None:
                 results = {"text":response}
-                id = insertQueryLog(userQuestion=user_query,Response=results)
-                return jsonify({"results":results, "id":str(id)}),200
+                # id = insertQueryLog(userQuestion=user_query,Response=results)
+                return jsonify({"results":results}),200
                 
                 
         conversation_history.append({"role": "assistant", "content": sql_query})
-        headers, rows = readSqlDatabse(sql_query)
+        # headers, rows = readSqlDatabse(sql_query)
+        results = {"text":sql_query}
+        # id = insertQueryLog(userQuestion=user_query,Response=results)
+        return jsonify({"results":results}),200
+
+        # if((len(headers) or len(rows)) == 0):
+        #     results = {"text":"Unfortunately, I found 0 records matching your search. Please try asking different question or adjust your search criteria."}
+        #     id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
+        #     return jsonify({"results":results, "id":str(id)}),200
         
-        if((len(headers) or len(rows)) == 0):
-            results = {"text":"Unfortunately, I found 0 records matching your search. Please try asking different question or adjust your search criteria."}
-            id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
-            return jsonify({"results":results, "id":str(id)}),200
-        
-        if any(word in user_query_lower for word in ('chart', 'graph')):
-            chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
-            results = {
-                    "labels": [str(row[headers[0]]) for row in rows],
-                    "data": [str(row[headers[1]]) for row in rows],
-                    "type" : chartType,
-                }
-            id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
-            return jsonify({"results":results, "id":str(id)}),200
-        #returns data for table
-        formatted_rows = [[str(row[header]) for header in headers] for row in rows]
-        results = {
-                "headers": headers,
-                "rows": formatted_rows,
-            }
-        id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
-        return jsonify({"results":results, "id":str(id)}),200
+        # if any(word in user_query_lower for word in ('chart', 'graph')):
+        #     chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
+        #     results = {
+        #             "labels": [str(row[headers[0]]) for row in rows],
+        #             "data": [str(row[headers[1]]) for row in rows],
+        #             "type" : chartType,
+        #         }
+        #     id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
+        #     return jsonify({"results":results, "id":str(id)}),200
+        # #returns data for table
+        # formatted_rows = [[str(row[header]) for header in headers] for row in rows]
+        # results = {
+        #         "headers": headers,
+        #         "rows": formatted_rows,
+        #     }
+        # id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
+        # return jsonify({"results":results, "id":str(id)}),200
     
     except openai.error.OpenAIError as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
