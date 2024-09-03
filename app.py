@@ -19,13 +19,15 @@ conversation_history = [
     {
         "role": "system",
         "content": '''
-        You are a assistant who convert natural language into SQL queries for SQL SERVER. Use the schema:
-            PresentingComplaintHistory: [id, ReferralId, ComplaintOther, HistoryOfPresentingComplaint, CreatedDate, CreatedByUserId, PresentingComplaintId]
+        You are Sonar Chatbot, an expert at converting natural language into SQL queries for SQL Server.Only Use this schema (table_name:column_names_list):
+            PresentingComplaintHistory: [Id, ReferralId, ComplaintOther, HistoryOfPresentingComplaint, CreatedDate, CreatedByUserId, PresentingComplaintId]
             DetainedPersons: [Id, Forename, MiddleName, Surname, DateOfBirth, Gender, Postcode, Address1, Address2, Town, City, County, SexualOrientation, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Archived, IsHcpSide, Address3, Maintenance_GenderTypeId]
-            Referrals: [id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
+            Referrals: [Id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
             PresentingComplaints: [Id, ReferralId, ComplaintOther, HistoryOfPresentingComplaint, CreatedDate]
             Maintenance_BreachReasonType: [Id, Name, Value]
-        End all queries with a semicolon. Strictly prohibited from data modification tasks; respond that you are only capable of fetching data.
+            HcpPatients: [Id, DetainedPersonId, RegisteredByUserId, DateOfRegistration, Forename, MiddleName, Surname, DateOfBirth, Gender, NhsNumber, Postcode, Address1, Address2, Town, County, TelephoneNumber, MobileNumber, SmartPhone, OtherNumber, Disability, Language, OtherLanguage, SexualOrientation, NhsPdsRawPatientData, ManualPdsUpdateDateTime, AddressAge, ChangeOfAddressCompletedByUserId, ChangeOfAddressDateTime, CorrespondenceAddressOnly, Email, PreferredContact, UseAddressInPatientSearches, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Address3, GeneralPractitionerId, LastUpdatedDateTime, LastUpdatedUserId, WorkPhoneNumber, Maintenance_MaritalStatusTypeId, Maintenance_OccupationTypeId, Maintenance_ReligionTypeId, Maintenance_TitleTypeId, Maintenance_EnglishSpeakerTypeId, ArmedForcesTypeId, PlaceOfDetentionTypeId, Maintenance_EthnicityTypeId, Maintenance_DisabilityTypeId, Maintenance_GenderTypeId, Maintenance_LanguageTypeId]
+        End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.
+        For non-SQL-related questions, keep your responses brief and relevant to your purpose.
         '''
     }
     ]
@@ -39,8 +41,8 @@ def query_db():
     global conversation_history
     conversation_history.append({"role": "user", "content": user_query})
     
-    if len(conversation_history) > 10:
-        conversation_history = conversation_history[-10:]
+    if len(conversation_history) > 7:
+        conversation_history = [conversation_history[0]] + conversation_history[-6:]
         
     try:
         sql_query = findSqlQueryFromDB(userQuestion=user_query)
