@@ -58,14 +58,14 @@ def query_db():
                 id = insertQueryLog(userQuestion=user_query,Response=results)
                 return jsonify({"results":results, "id":str(id)}),200
                 
-        
+                
         conversation_history.append({"role": "assistant", "content": sql_query})
         headers, rows = readSqlDatabse(sql_query)
         
         if((len(headers) or len(rows)) == 0):
             results = {"text":"Unfortunately, I found 0 records matching your search. Please try asking different question or adjust your search criteria."}
             id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
-            return jsonify({"results":results, "id":str(id)}),200
+            return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
         
         if any(word in user_query_lower for word in ('chart', 'graph')):
             chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
@@ -75,7 +75,7 @@ def query_db():
                     "type" : chartType,
                 }
             id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
-            return jsonify({"results":results, "id":str(id)}),200
+            return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
         #returns data for table
         formatted_rows = [[str(row[header]) for header in headers] for row in rows]
         results = {
@@ -83,17 +83,17 @@ def query_db():
                 "rows": formatted_rows,
             }
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
-        return jsonify({"results":results, "id":str(id)}),200
+        return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
     
     except openai.error.OpenAIError as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error":f"OpenAI Model Error: {str(e)}", "id":str(id)}), 500
+        return jsonify({"error":f"OpenAI Model Error: {str(e)}", "id":str(id), "sql_query":str(sql_query)}), 500
     except SQLAlchemyError as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error": f"I apologize for the inconvenience. It seems there was an error in the response related to the database tables or columns not being present in the data source. Is there anything else I can assist you with? Exception: {str(e)}", "id": str(id)}), 500
+        return jsonify({"error": f"I apologize for the inconvenience. It seems there was an error in the response related to the database tables or columns not being present in the data source. Is there anything else I can assist you with?", "id": str(id), "sql_query":str(sql_query)}), 500
     except Exception as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error":f"I apologize for the inconvenience. It seems there was an error in the response, Exception: {str(e)}", "id":str(id)}), 500
+        return jsonify({"error":f"I apologize for the inconvenience. It seems there was an error in the response, Please try some other questions.", "id":str(id), "sql_query":str(sql_query)}), 500
     
     
 
