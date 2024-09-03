@@ -19,10 +19,15 @@ openai.api_version = os.getenv('OPENAI_API_VERSION')
 #MongoDB Configurations
 client = MongoClient(os.getenv('CONNECTION_STRING'))
 DB = client['ChabotFeedback']
-collection = DB['QueryLogs']
+collection = DB['BBChatBotOnline']
 
 #SQL Server Configurations
 conn_str = os.getenv('SQL_CONNECTION_STRING')
+#conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
+
+if isinstance(conn_str, bytes):
+    conn_str = conn_str.decode('utf-8')  # Convert bytes to string
+
 conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
 engine = create_engine(conn_url)
 
@@ -48,6 +53,7 @@ def generateSqlQuery(conversation_history):
     response = openai.ChatCompletion.create(
             deployment_id=os.getenv('DEPLOYMENT_ID'),
             messages=conversation_history,
+            max_tokens=2000
         )
     return response.choices[0].message['content'].strip()
 
@@ -71,14 +77,15 @@ def saveFeedback(resID,feedback):
 
 
 def findSqlQueryFromDB(userQuestion):
-    result = collection.find_one({"UserQuestion": userQuestion, "IsCorrect": True})
-    if result:
-        return result.get('SqlQuery')
-    else:
-        return None
+    result = collection.find_one(
+        {"UserQuestion": userQuestion, "IsCorrect": True},
+        sort=[("timestamp", 1)],  # Sort by timestamp in ascending order
+        projection={"SqlQuery": 1}
+    )
+    return result['SqlQuery'] if result else None
 
 def extractSqlQueryFromResponse(response):
-    sql_pattern = r'(WITH|SELECT|INSERT|UPDATE|DELETE)[\s\S]+?(?=\s*;)'
+    sql_pattern = r'(WITH|SELECT)[\s\S]+?;'
     matches = re.search(sql_pattern, response, re.IGNORECASE)
     if matches:
         return matches.group(0).strip()
