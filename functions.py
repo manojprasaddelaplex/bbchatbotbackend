@@ -7,6 +7,7 @@ import openai
 import os
 import re
 import urllib.parse
+import tiktoken
 
 load_dotenv(".env")
 
@@ -54,7 +55,15 @@ def generateSqlQuery(conversation_history):
             messages=conversation_history,
             max_tokens=3000
         )
+    # Extracting token usage information
+    prompt_tokens = response['usage']['prompt_tokens']
+    response_tokens = response['usage']['completion_tokens']
+    total_tokens = response['usage']['total_tokens']
     
+    # Printing token usage information
+    print(f"\nPrompt tokens: {prompt_tokens}")
+    print(f"Response tokens: {response_tokens}")
+    print(f"Total tokens: {total_tokens}")
     return response.choices[0].message['content'].strip()
 
 
@@ -91,3 +100,31 @@ def extractSqlQueryFromResponse(response):
         return matches.group(0).strip()
     else:
         return None
+    
+def estimate_tokens(text):
+    enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
+    return len(enc.encode(text))
+
+
+def manage_conversation_length(conversation):
+    """Ensure the conversation length stays within token limits and fixed number of entries."""
+    # Calculate total tokens
+    total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+    print(total_tokens)
+    # System prompt should always be preserved
+    system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
+    
+    # Check if we need to pop entries to fit within the 7-entry limit
+    if len(conversation) > 7:
+        # Remove oldest entries until we have only 7
+        conversation = [conversation[0]] + conversation[-6:]  # Keep system prompt and last 6 entries
+    
+    # Ensure tokens stay within limit while preserving system prompt
+    while total_tokens > 1050 and system_prompt_index is not None:
+        if len(conversation) > system_prompt_index + 1:  # Ensure there are entries to pop after the system prompt
+            conversation.pop(system_prompt_index + 1)  # Remove the oldest user-assistant exchange
+            total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+        else:
+            break  # Exit if there are no more entries to remove after the system prompt
+    
+    return conversation
