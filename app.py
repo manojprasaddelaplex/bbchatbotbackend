@@ -2,7 +2,7 @@ import openai
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse
+from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -37,9 +37,11 @@ def query_db():
     global conversation_history
     conversation_history.append({"role": "user", "content": user_query})
     
-    if len(conversation_history) > 7:
-        conversation_history = [conversation_history[0]] + conversation_history[-6:]
-        
+    # if len(conversation_history) > 7:
+    #     conversation_history = [conversation_history[0]] + conversation_history[-6:]
+    conversation_history = manage_conversation_length(conversation_history)
+    print("\nHistory:",conversation_history)
+    
     try:
         sql_query = findSqlQueryFromDB(userQuestion=user_query)
         if sql_query==None:
