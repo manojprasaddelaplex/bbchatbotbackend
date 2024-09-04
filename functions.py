@@ -52,7 +52,7 @@ def generateSqlQuery(conversation_history):
     response = openai.ChatCompletion.create(
             deployment_id=os.getenv('DEPLOYMENT_ID'),
             messages=conversation_history,
-            max_tokens=2000
+            max_tokens=3000
         )
     
     return response.choices[0].message['content'].strip()
