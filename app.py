@@ -2,7 +2,7 @@ import openai
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length
+from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length, find_best_matching_user_questions
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -37,10 +37,7 @@ def query_db():
     global conversation_history
     conversation_history.append({"role": "user", "content": user_query})
     
-    # if len(conversation_history) > 7:
-    #     conversation_history = [conversation_history[0]] + conversation_history[-6:]
     conversation_history = manage_conversation_length(conversation_history)
-    print("\nHistory:",conversation_history)
     
     try:
         sql_query = findSqlQueryFromDB(userQuestion=user_query)
@@ -87,8 +84,20 @@ def query_db():
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
         return jsonify({"error":f"OpenAI Model Error: {str(e)}", "id":str(id), "sql_query":str(sql_query)}), 500
     except SQLAlchemyError as e:
+        base_err = "I apologize for the confusion. It seems I misunderstood your question, leading to a response that is not related to the database tables and columns I have access to. "
+        similar_questions = find_best_matching_user_questions(userQuestion=user_query)
+    
+        err = base_err + ("Here are some similar questions that might be helpful for you. " if similar_questions else "") + "Is there anything else I can assist you with?"
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error": f"I apologize for the inconvenience. It seems there was an error in the response related to the database tables or columns not being present in the data source. Is there anything else I can assist you with?", "id": str(id), "sql_query":str(sql_query)}), 500
+        
+        results = {
+            "error": err,
+            "similar_questions":similar_questions,
+            "id": str(id),
+            "sql_query":str(sql_query)
+        }
+        
+        return jsonify(results), 500
     except Exception as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
         return jsonify({"error":f"I apologize for the inconvenience. It seems there was an error in the response, Please try some other questions.", "id":str(id), "sql_query":str(sql_query)}), 500
