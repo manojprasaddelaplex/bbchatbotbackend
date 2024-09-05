@@ -55,15 +55,7 @@ def generateSqlQuery(conversation_history):
             messages=conversation_history,
             max_tokens=3000
         )
-    # Extracting token usage information
-    prompt_tokens = response['usage']['prompt_tokens']
-    response_tokens = response['usage']['completion_tokens']
-    total_tokens = response['usage']['total_tokens']
     
-    # Printing token usage information
-    print(f"\nPrompt tokens: {prompt_tokens}")
-    print(f"Response tokens: {response_tokens}")
-    print(f"Total tokens: {total_tokens}")
     return response.choices[0].message['content'].strip()
 
 
@@ -110,7 +102,6 @@ def manage_conversation_length(conversation):
     """Ensure the conversation length stays within token limits and fixed number of entries."""
     # Calculate total tokens
     total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
-    print(total_tokens)
     # System prompt should always be preserved
     system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
     
@@ -128,3 +119,28 @@ def manage_conversation_length(conversation):
             break  # Exit if there are no more entries to remove after the system prompt
     
     return conversation
+
+
+def find_best_matching_user_questions(userQuestion):
+    # Perform a text search to find the best matching UserQuestion
+    results = list(collection.find(
+        {
+            "$text": {"$search": userQuestion},  # Use text search for matching
+            "IsCorrect": True,
+            "ExceptionMessage": None
+        },
+        sort=[("createdAt", 1), ("score", {"$meta": "textScore"})],  # Sort by text score (highest first)
+        projection={"score": {"$meta": "textScore"}, "UserQuestion": 1}  # Project UserQuestion and score
+    ).limit(10))  # Limit to top 5 results
+
+    # Use a set to track unique questions
+    seen_questions = set()
+    unique_results = []
+
+    for res in results:
+        user_question = res['UserQuestion']
+        if user_question not in seen_questions:
+            seen_questions.add(user_question)
+            unique_results.append(user_question)
+    
+    return unique_results[:3] if unique_results else None
