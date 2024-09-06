@@ -20,7 +20,7 @@ openai.api_version = os.getenv('OPENAI_API_VERSION')
 #MongoDB Configurations
 client = MongoClient(os.getenv('CONNECTION_STRING'))
 DB = client['ChabotFeedback']
-collection = DB['ProdLogs']
+collection = DB['BBChatBotOnline']
 
 #SQL Server Configurations
 conn_str = os.getenv('SQL_CONNECTION_STRING')
