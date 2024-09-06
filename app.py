@@ -5,6 +5,7 @@ from flasgger import Swagger, swag_from
 from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length, find_best_matching_user_questions
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
+import re
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
@@ -62,7 +63,7 @@ def query_db():
             id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
             return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
         
-        if any(word in user_query_lower for word in ('chart', 'graph')):
+        if re.search(r'\b(chart|graph)\b', user_query_lower):
             chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
             results = {
                     "labels": [str(row[headers[0]]) for row in rows],
