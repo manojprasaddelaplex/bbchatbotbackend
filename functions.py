@@ -8,6 +8,9 @@ import os
 import re
 import urllib.parse
 import tiktoken
+import spacy
+from collections import defaultdict
+
 
 load_dotenv(".env")
 
@@ -21,6 +24,7 @@ openai.api_version = os.getenv('OPENAI_API_VERSION')
 client = MongoClient(os.getenv('CONNECTION_STRING'))
 DB = client['ChabotFeedback']
 collection = DB['BBChatBotOnline']
+Schema_Collection = DB['DataBaseSchema']
 
 #SQL Server Configurations
 conn_str = os.getenv('SQL_CONNECTION_STRING')
@@ -148,3 +152,63 @@ def find_best_matching_user_questions(userQuestion):
         return unique_results[:3] if unique_results else None
     except Exception as e:
         return None
+    
+
+def get_db_metadata(collection):
+    metadata = {}
+    for doc in collection.find():
+        table_name = doc['TableName']
+        metadata[table_name] = {
+            'columns': doc['columns'],
+            'relations': doc.get('relations', {}),
+            'description': f"Table containing information about {table_name.replace('_', ' ')}."
+        }
+    return metadata
+
+
+def analyze_question(question, db_metadata):
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(question.lower())
+    
+    # Extract important words (nouns, verbs, adjectives)
+    important_words = [token.lemma_ for token in doc if token.pos_ in ['NOUN', 'VERB', 'ADJ']]
+    
+    # Calculate relevance scores
+    scores = defaultdict(float)
+    for table, info in db_metadata.items():
+        table_doc = nlp(table.lower() + ' ' + info['description'].lower())
+        for word in important_words:
+            if word in table_doc.text:
+                scores[table] += 1
+        
+        for column in info['columns']:
+            column_doc = nlp(column.lower())
+            for word in important_words:
+                if word in column_doc.text:
+                    scores[table] += 0.5
+
+    # Normalize scores
+    max_score = max(scores.values()) if scores else 1
+    normalized_scores = {table: score / max_score for table, score in scores.items()}
+    
+    # Filter tables with a relevance score above a threshold
+    threshold = 0.3  # Adjust this value to control precision
+    relevant_tables = [table for table, score in normalized_scores.items() if score > threshold]
+    
+    return relevant_tables
+
+
+def get_relevant_schemas(question, collection=Schema_Collection):
+    db_metadata = get_db_metadata(collection)
+    relevant_tables = analyze_question(question, db_metadata)
+    relevant_schemas = {table: {
+            'columns': db_metadata[table]['columns'], 
+            'relations': db_metadata[table]['relations']
+        }
+        for table in relevant_tables}
+    
+    # Join all the data into a single string
+    data = "\n".join([f"TableName: {table}\nColumns: {schema['columns']}\nRelations(SecondaryTable : ForeignKey): {schema['relations']}\n" 
+                      for table, schema in relevant_schemas.items()])
+    return data
+

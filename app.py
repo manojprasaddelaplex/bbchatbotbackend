@@ -2,7 +2,8 @@ import openai
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length, find_best_matching_user_questions
+import spacy
+from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length, find_best_matching_user_questions,get_relevant_schemas
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
@@ -11,6 +12,9 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 swagger = Swagger(app)
 
+if not spacy.util.is_package("en_core_web_sm"):
+    from spacy.cli import download
+    download("en_core_web_sm")
 
 @app.route("/")
 def home():
@@ -34,7 +38,9 @@ conversation_history = [
 def query_db():
     user_query = request.json.get('query')
     user_query_lower = user_query.lower()
-    
+
+    dbSchema = get_relevant_schemas(user_query)
+    print(dbSchema)
     global conversation_history
     conversation_history.append({"role": "user", "content": user_query})
     
