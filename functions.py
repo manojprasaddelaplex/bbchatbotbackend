@@ -32,8 +32,19 @@ conn_str = os.getenv('SQL_CONNECTION_STRING')
 if isinstance(conn_str, bytes):
     conn_str = conn_str.decode('utf-8')  # Convert bytes to string
 
-conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
-engine = create_engine(conn_url)
+# conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
+# engine = create_engine(conn_url)
+# Replace with your actual connection details
+server = "SHREYASH\\SQLEXPRESS"  # Your SQL Server name
+database = 'DataPortal'  # Your database name
+username = 'sa'  # Your SQL Server username
+password = 'root'  # Your SQL Server password
+
+# Create the connection string
+connection_string = f'mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
+
+# Create the engine
+engine = create_engine(connection_string)
 
 def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=None, 
                      isDataFetchedFromDB=False, isCorrect=None, feedbackDateTime=None):
@@ -59,7 +70,15 @@ def generateSqlQuery(conversation_history):
             messages=conversation_history,
             max_tokens=3000
         )
+    # Extract token usage information
+    prompt_tokens = response['usage']['prompt_tokens']
+    completion_tokens = response['usage']['completion_tokens']
+    total_tokens = response['usage']['total_tokens']
     
+    # Print token usage information
+    print(f"\nPrompt tokens: {prompt_tokens}")
+    print(f"Response tokens: {completion_tokens}")
+    print(f"Total tokens: {total_tokens}\n")
     return response.choices[0].message['content'].strip()
 
 
@@ -103,10 +122,11 @@ def estimate_tokens(text):
     return len(enc.encode(text))
 
 
-def manage_conversation_length(conversation):
+def manageConversationLength(conversation):
     """Ensure the conversation length stays within token limits and fixed number of entries."""
     # Calculate total tokens
     total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+    print(total_tokens)
     # System prompt should always be preserved
     system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
     
@@ -212,3 +232,15 @@ def get_relevant_schemas(question, collection=Schema_Collection):
                       for table, schema in relevant_schemas.items()])
     return data
 
+
+def get_system_prompt(schema):
+    return {
+        "role": "system",
+        "content": f'''
+        You are Sonar Chatbot, an expert at converting natural language into SQL queries for SQL Server.
+        Only use this schema:
+        {schema}
+        End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.
+        For non-SQL-related questions, keep your responses brief and relevant to your purpose.
+        '''
+    }
