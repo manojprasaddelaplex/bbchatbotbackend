@@ -2,8 +2,7 @@ import openai
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-import spacy
-from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manageConversationLength, find_best_matching_user_questions,get_relevant_schemas,get_system_prompt
+from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length, find_best_matching_user_questions
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
@@ -12,40 +11,34 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 swagger = Swagger(app)
 
-if not spacy.util.is_package("en_core_web_sm"):
-    from spacy.cli import download
-    download("en_core_web_sm")
 
 @app.route("/")
 def home():
     return redirect('/apidocs/')
 
-# conversation_history = [
-#     {
-#         "role": "system",
-#         "content": '''
-#         You are Sonar Chatbot, an expert at converting natural language into SQL queries for SQL Server.Only Use this schema (table_name:column_names_list):
-#             Referrals: [Id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
-#             HcpPatients: [Id, DetainedPersonId, RegisteredByUserId, DateOfRegistration, Forename, MiddleName, Surname, DateOfBirth, Gender, NhsNumber, Postcode, Address1, Address2, Town, County, TelephoneNumber, MobileNumber, SmartPhone, OtherNumber, Disability, Language, OtherLanguage, SexualOrientation, NhsPdsRawPatientData, ManualPdsUpdateDateTime, AddressAge, ChangeOfAddressCompletedByUserId, ChangeOfAddressDateTime, CorrespondenceAddressOnly, Email, PreferredContact, UseAddressInPatientSearches, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Address3, GeneralPractitionerId, LastUpdatedDateTime, LastUpdatedUserId, WorkPhoneNumber, Maintenance_MaritalStatusTypeId, Maintenance_OccupationTypeId, Maintenance_ReligionTypeId, Maintenance_TitleTypeId, Maintenance_EnglishSpeakerTypeId, ArmedForcesTypeId, PlaceOfDetentionTypeId, Maintenance_EthnicityTypeId, Maintenance_DisabilityTypeId, Maintenance_GenderTypeId, Maintenance_LanguageTypeId]
-#         End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.
-#         For non-SQL-related questions, keep your responses brief and relevant to your purpose.
-#         '''
-#     }
-#     ]
+conversation_history = [
+    {
+        "role": "system",
+        "content": '''
+        You are Sonar Chatbot, an expert at converting natural language into SQL queries for SQL Server.Only Use this schema (table_name:column_names_list):
+            Referrals: [Id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
+            HcpPatients: [Id, DetainedPersonId, RegisteredByUserId, DateOfRegistration, Forename, MiddleName, Surname, DateOfBirth, Gender, NhsNumber, Postcode, Address1, Address2, Town, County, TelephoneNumber, MobileNumber, SmartPhone, OtherNumber, Disability, Language, OtherLanguage, SexualOrientation, NhsPdsRawPatientData, ManualPdsUpdateDateTime, AddressAge, ChangeOfAddressCompletedByUserId, ChangeOfAddressDateTime, CorrespondenceAddressOnly, Email, PreferredContact, UseAddressInPatientSearches, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Address3, GeneralPractitionerId, LastUpdatedDateTime, LastUpdatedUserId, WorkPhoneNumber, Maintenance_MaritalStatusTypeId, Maintenance_OccupationTypeId, Maintenance_ReligionTypeId, Maintenance_TitleTypeId, Maintenance_EnglishSpeakerTypeId, ArmedForcesTypeId, PlaceOfDetentionTypeId, Maintenance_EthnicityTypeId, Maintenance_DisabilityTypeId, Maintenance_GenderTypeId, Maintenance_LanguageTypeId]
+        End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.
+        For non-SQL-related questions, keep your responses brief and relevant to your purpose.
+        '''
+    }
+    ]
 
 @app.route("/query", methods=["POST"])
 @swag_from(main_swagger)
 def query_db():
     user_query = request.json.get('query')
     user_query_lower = user_query.lower()
-
-    dbSchema = get_relevant_schemas(user_query)
-    print(dbSchema)
-
-    conversation_history = [get_system_prompt(dbSchema)]
+    
+    global conversation_history
     conversation_history.append({"role": "user", "content": user_query})
     
-    conversation_history = manageConversationLength(conversation_history)
+    conversation_history = manage_conversation_length(conversation_history)
     
     try:
         sql_query = findSqlQueryFromDB(userQuestion=user_query)
@@ -118,8 +111,10 @@ def submit_feedback():
     data = request.get_json()
     resID = data.get('resID')
     feedback = bool(data.get('feedback'))
+    userQuestion = data.get('userQuestion')
+
     try:
-        saveFeedback(resID,feedback)
+        saveFeedback(resID,feedback,userQuestion)
         return jsonify({"message": "Feedback submitted successfully!"}), 200 
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
