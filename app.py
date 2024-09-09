@@ -111,8 +111,10 @@ def submit_feedback():
     data = request.get_json()
     resID = data.get('resID')
     feedback = bool(data.get('feedback'))
+    userQuestion = data.get('userQuestion')
+
     try:
-        saveFeedback(resID,feedback)
+        saveFeedback(resID,feedback,userQuestion)
         return jsonify({"message": "Feedback submitted successfully!"}), 200 
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
