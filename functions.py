@@ -53,9 +53,19 @@ def generateSqlQuery(conversation_history):
     response = openai.ChatCompletion.create(
             deployment_id=os.getenv('DEPLOYMENT_ID'),
             messages=conversation_history,
-            max_tokens=3000
+            max_tokens=2000,
+            temperature=0.2,        # Low temperature for deterministic responses
+            top_p=0.7,              # Slightly reduce diversity to focus on accuracy
+            presence_penalty=0.1    # Encourage new information where appropriate
         )
+    prompt_tokens = response['usage']['prompt_tokens']
+    completion_tokens = response['usage']['completion_tokens']
+    total_tokens = response['usage']['total_tokens']
     
+    # Print token usage information
+    print(f"\nPrompt tokens: {prompt_tokens}")
+    print(f"Response tokens: {completion_tokens}")
+    print(f"Total tokens: {total_tokens}\n")
     return response.choices[0].message['content'].strip()
 
 
@@ -66,14 +76,19 @@ def readSqlDatabse(sql_query):
         headers = list(rows[0].keys()) if rows else []
     return headers, rows
 
-def saveFeedback(resID,feedback):
-    collection.update_one(
+def saveFeedback(resID,feedback,userQuestion):
+    existing_correct = collection.find_one({
+        "UserQuestion": userQuestion,
+        "IsCorrect": feedback
+    })
+
+    if not existing_correct:
+        collection.update_one(
             {"_id": ObjectId(resID)},
             {"$set": {
                 "IsCorrect": feedback,
                 "FeedbackDateTime": datetime.now().strftime('%d-%m-%Y %H:%M:%S')
-                }
-            }
+            }}
         )
 
 
@@ -103,6 +118,7 @@ def manage_conversation_length(conversation):
     """Ensure the conversation length stays within token limits and fixed number of entries."""
     # Calculate total tokens
     total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+    print("\ntiktoken:",total_tokens)
     # System prompt should always be preserved
     system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
     
@@ -147,4 +163,23 @@ def find_best_matching_user_questions(userQuestion):
 
         return unique_results[:3] if unique_results else None
     except Exception as e:
+        return None
+    
+
+def find_best_matching_user_question_with_sql(userQuestion):
+    try:
+        # Perform a text search to find the best matching UserQuestion
+        result = collection.find_one(
+            {
+                "$text": {"$search": userQuestion},  # Use text search for matching
+                "IsCorrect": True,
+                "ExceptionMessage": None
+            },
+            sort=[("score", {"$meta": "textScore"}), ("createdAt", 1)],  # Sort by text score (highest first)
+            projection={"UserQuestion": 1, "SqlQuery": 1, "_id": 0}  # Project UserQuestion and SqlQuery
+        )
+
+        return result if result else None
+    except Exception as e:
+        print(f"An error occurred: {e}")
         return None

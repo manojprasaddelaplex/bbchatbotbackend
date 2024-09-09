@@ -2,7 +2,7 @@ import openai
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length, find_best_matching_user_questions
+from functions import insertQueryLog, generateSqlQuery, readSqlDatabse, saveFeedback, findSqlQueryFromDB, extractSqlQueryFromResponse, manage_conversation_length, find_best_matching_user_questions,find_best_matching_user_question_with_sql
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
@@ -20,11 +20,16 @@ conversation_history = [
     {
         "role": "system",
         "content": '''
-        You are Sonar Chatbot, an expert at converting natural language into SQL queries for SQL Server.Only Use this schema (table_name:column_names_list):
-            Referrals: [Id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
-            HcpPatients: [Id, DetainedPersonId, RegisteredByUserId, DateOfRegistration, Forename, MiddleName, Surname, DateOfBirth, Gender, NhsNumber, Postcode, Address1, Address2, Town, County, TelephoneNumber, MobileNumber, SmartPhone, OtherNumber, Disability, Language, OtherLanguage, SexualOrientation, NhsPdsRawPatientData, ManualPdsUpdateDateTime, AddressAge, ChangeOfAddressCompletedByUserId, ChangeOfAddressDateTime, CorrespondenceAddressOnly, Email, PreferredContact, UseAddressInPatientSearches, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Address3, GeneralPractitionerId, LastUpdatedDateTime, LastUpdatedUserId, WorkPhoneNumber, Maintenance_MaritalStatusTypeId, Maintenance_OccupationTypeId, Maintenance_ReligionTypeId, Maintenance_TitleTypeId, Maintenance_EnglishSpeakerTypeId, ArmedForcesTypeId, PlaceOfDetentionTypeId, Maintenance_EthnicityTypeId, Maintenance_DisabilityTypeId, Maintenance_GenderTypeId, Maintenance_LanguageTypeId]
-        End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.
-        For non-SQL-related questions, keep your responses brief and relevant to your purpose.
+        1.You are Sonar Chatbot, an expert at converting natural language into SQL queries for SQL Server.
+            
+        2.**End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.**
+        3.**For similar questions provided:
+            Analyze the structure of the given SQL query.
+            Adapt it to the current question, maintaining similar structure when appropriate.
+            Prioritize accuracy.**
+        4.If the similar question isn't relevant, use your expertise to generate a suitable query.
+        5.try not to use CAST in sql queries.
+        5.**For non-SQL-related questions, keep your responses brief and relevant to your purpose.**
         '''
     }
     ]
@@ -36,12 +41,19 @@ def query_db():
     user_query_lower = user_query.lower()
     
     global conversation_history
+    best_match = find_best_matching_user_question_with_sql(user_query)
+    print("\nBestMatch:",best_match)
+    if best_match:
+        conversation_history.append({"role": "system", "content": f"Similar question: {best_match['UserQuestion']}"})
+        conversation_history.append({"role": "system", "content": f"SQL for similar question: {best_match['SqlQuery']}"})
+    
     conversation_history.append({"role": "user", "content": user_query})
     
     conversation_history = manage_conversation_length(conversation_history)
-    
+    print("\nHIstory: ",conversation_history)
+    print("Length:",len(conversation_history))
     try:
-        sql_query = findSqlQueryFromDB(userQuestion=user_query)
+        sql_query = None#findSqlQueryFromDB(userQuestion=user_query)
         if sql_query==None:
             response = generateSqlQuery(conversation_history)
             sql_query = extractSqlQueryFromResponse(response=response)
@@ -59,7 +71,7 @@ def query_db():
         headers, rows = readSqlDatabse(sql_query)
         
         if((len(headers) or len(rows)) == 0):
-            results = {"text":"Unfortunately, I found 0 records matching your search. Please try asking different question or adjust your search criteria."}
+            results = {"text":"I found 0 records matching your search. Please try asking different question or adjust your search criteria."}
             id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
             return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
         
@@ -111,8 +123,10 @@ def submit_feedback():
     data = request.get_json()
     resID = data.get('resID')
     feedback = bool(data.get('feedback'))
+    userQuestion = data.get('userQuestion')
+
     try:
-        saveFeedback(resID,feedback)
+        saveFeedback(resID,feedback,userQuestion)
         return jsonify({"message": "Feedback submitted successfully!"}), 200 
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
