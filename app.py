@@ -59,7 +59,7 @@ def query_db():
         headers, rows = readSqlDatabse(sql_query)
         
         if((len(headers) or len(rows)) == 0):
-            results = {"text":"Unfortunately, I found 0 records matching your search. Please try asking different question or adjust your search criteria."}
+            results = {"text":"I found 0 records in database on your search. Please try asking different question or adjust your search criteria."}
             id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
             return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
         
