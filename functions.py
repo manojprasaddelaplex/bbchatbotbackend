@@ -128,28 +128,28 @@ def manage_conversation_length(conversation):
 
 
 def find_best_matching_user_questions(userQuestion):
-    try:
-        # Perform a text search to find the best matching UserQuestion
-        results = list(collection.find(
-            {
-                "$text": {"$search": userQuestion},  # Use text search for matching
-                "IsCorrect": True,
-                "ExceptionMessage": None
-            },
-            sort=[("score", {"$meta": "textScore"}), ("createdAt", 1)],  # Sort by text score (highest first)
-            projection={"UserQuestion": 1, "score": {"$meta": "textScore"}, "_id": 0}  # Project UserQuestion and score
-        ).limit(10))  # Limit to top 5 results
+    # try:
+    #     # Perform a text search to find the best matching UserQuestion
+    #     results = list(collection.find(
+    #         {
+    #             "$text": {"$search": userQuestion},  # Use text search for matching
+    #             "IsCorrect": True,
+    #             "ExceptionMessage": None
+    #         },
+    #         sort=[("score", {"$meta": "textScore"}), ("createdAt", 1)],  # Sort by text score (highest first)
+    #         projection={"UserQuestion": 1, "score": {"$meta": "textScore"}, "_id": 0}  # Project UserQuestion and score
+    #     ).limit(10))  # Limit to top 5 results
 
-        # Use a set to track unique questions
-        seen_questions = set()
-        unique_results = []
+    #     # Use a set to track unique questions
+    #     seen_questions = set()
+    #     unique_results = []
 
-        for res in results:
-            user_question = res['UserQuestion']
-            if user_question not in seen_questions:
-                seen_questions.add(user_question)
-                unique_results.append(user_question)
+    #     for res in results:
+    #         user_question = res['UserQuestion']
+    #         if user_question not in seen_questions:
+    #             seen_questions.add(user_question)
+    #             unique_results.append(user_question)
 
-        return unique_results[:3] if unique_results else None
-    except Exception as e:
+    #     return unique_results[:3] if unique_results else None
+    # except Exception as e:
         return None
