@@ -100,7 +100,7 @@ def query_db():
         return jsonify(results), 500
     except Exception as e:
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
-        return jsonify({"error":f"I apologize for the inconvenience. It seems there was an error in the response, Please try some other questions.", "id":str(id), "sql_query":str(sql_query)}), 500
+        return jsonify({"error":f"I apologize for the inconvenience. It seems there was an error in the response, Please try some other questions.{e}", "id":str(id), "sql_query":str(sql_query)}), 500
     
     
 
