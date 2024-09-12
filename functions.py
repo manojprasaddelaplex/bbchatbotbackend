@@ -3,18 +3,13 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from sqlalchemy import create_engine, text
-from openai import AzureOpenAI
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+import openai
 import os
 import re
 import urllib.parse
 import tiktoken
 
 load_dotenv(".env")
-
-os.environ['AZURE_CLIENT_ID']
-os.environ['AZURE_TENANT_ID']
-os.environ['AZURE_CLIENT_SECRET']
 
 endpoint = os.getenv("ENDPOINT_URL")
 deployment = os.getenv("DEPLOYMENT_NAME")
@@ -23,15 +18,12 @@ search_key = os.getenv("SEARCH_KEY")
 search_index = os.getenv("SEARCH_INDEX_NAME")
 cognitive_service = os.getenv("COGNITIVE_SERVICE")
 api_version = os.getenv("API_VERSION")
+asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
-
-token_provider = get_bearer_token_provider(
-    DefaultAzureCredential(),
-    cognitive_service)
-     
-client = AzureOpenAI(
+#Asure Openai Configurations
+client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
-    azure_ad_token_provider=token_provider,
+    api_key=asure_openai_api_key,
     api_version=api_version,
 )
 
@@ -73,8 +65,8 @@ def azure_search_openai(conversation_history):
     completion = client.chat.completions.create(
         model=deployment,
         messages= conversation_history,
-        max_tokens=800,
-        temperature=0,
+        max_tokens=3000,
+        temperature=0.1,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0,
@@ -85,12 +77,11 @@ def azure_search_openai(conversation_history):
               "type": "azure_search",
               "parameters": {
                 "endpoint": f"{search_endpoint}",
-                "index_name": "sqlviewindex",
+                "index_name": f"{search_index}",
                 "semantic_configuration": "default",
                 "query_type": "semantic",
                 "fields_mapping": {},
                 "in_scope": True,
-                "role_information": "You are an AI assistant that helps people find accurate information.",
                 "filter": None,
                 "strictness": 3,
                 "top_n_documents": 5,
@@ -102,8 +93,7 @@ def azure_search_openai(conversation_history):
             }]
         }
     )
-    response = completion.to_dict()
-    return response['choices'][0]['message']['content']
+    return completion.choices[0].message.content
 
 
 def readSqlDatabse(sql_query):
@@ -128,11 +118,31 @@ def saveFeedback(resID,feedback,userQuestion):
             }}
         )
 
+
+def findSqlQueryFromDB(userQuestion):
+    result = collection.find_one(
+        {"UserQuestion": userQuestion, "IsCorrect": True},
+        sort=[("timestamp", 1)],  # Sort by timestamp in ascending order
+        projection={"SqlQuery": 1}
+    )
+    return result['SqlQuery'] if result else None
+
+
 def extractSqlQueryFromResponse(response):
+    # First, try to extract content from code blocks
+    code_block_pattern = r'```(?:sql)?\s*([\s\S]+?)\s*```'
+    code_block_match = re.search(code_block_pattern, response, re.IGNORECASE)
+    
+    if code_block_match:
+        sql_content = code_block_match.group(1)
+    else:
+        sql_content = response
+    
     sql_pattern = r'(WITH|SELECT)[\s\S]+?;'
-    matches = re.search(sql_pattern, response, re.IGNORECASE)
-    if matches:
-        return matches.group(0).strip()
+    sql_match = re.search(sql_pattern, sql_content, re.IGNORECASE | re.MULTILINE)
+    
+    if sql_match:
+        return sql_match.group(0).strip()
     else:
         return None
     
@@ -150,9 +160,9 @@ def manage_conversation_length(conversation):
     system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
     
     # Check if we need to pop entries to fit within the 7-entry limit
-    if len(conversation) > 7:
+    if len(conversation) > 4:
         # Remove oldest entries until we have only 7
-        conversation = [conversation[0]] + conversation[-6:]  # Keep system prompt and last 6 entries
+        conversation = [conversation[0]] + conversation[-3:]  # Keep system prompt and last 6 entries
     
     # Ensure tokens stay within limit while preserving system prompt
     while total_tokens > 1050 and system_prompt_index is not None:
@@ -189,5 +199,23 @@ def find_best_matching_user_questions(userQuestion):
                 unique_results.append(user_question)
 
         return unique_results[:3] if unique_results else None
+    except Exception as e:
+        return None
+
+    
+def find_best_matching_user_question_with_sql(userQuestion):
+    try:
+        # Perform a text search to find the best matching UserQuestion
+        result = collection.find_one(
+            {
+                "$text": {"$search": userQuestion},  # Use text search for matching
+                "IsCorrect": True,
+                "ExceptionMessage": None
+            },
+            sort=[("score", {"$meta": "textScore"}), ("createdAt", 1)],  # Sort by text score (highest first)
+            projection={"UserQuestion": 1, "SqlQuery": 1, "_id": 0}  # Project UserQuestion and SqlQuery
+        )
+
+        return result if result else None
     except Exception as e:
         return None
