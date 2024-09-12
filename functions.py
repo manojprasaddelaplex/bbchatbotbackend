@@ -20,6 +20,7 @@ cognitive_service = os.getenv("COGNITIVE_SERVICE")
 api_version = os.getenv("API_VERSION")
 asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
+#Asure Openai Configurations
 client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
     api_key=asure_openai_api_key,
