@@ -4,17 +4,13 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from sqlalchemy import create_engine, text
 from openai import AzureOpenAI
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider,ManagedIdentityCredential
 import os
 import re
 import urllib.parse
 import tiktoken
 
 load_dotenv(".env")
-
-os.environ['AZURE_CLIENT_ID']
-os.environ['AZURE_TENANT_ID']
-os.environ['AZURE_CLIENT_SECRET']
 
 endpoint = os.getenv("ENDPOINT_URL")
 deployment = os.getenv("DEPLOYMENT_NAME")
@@ -26,7 +22,7 @@ api_version = os.getenv("API_VERSION")
 
 
 token_provider = get_bearer_token_provider(
-    DefaultAzureCredential(),
+    ManagedIdentityCredential(),
     cognitive_service)
      
 client = AzureOpenAI(
