@@ -66,7 +66,7 @@ def azure_search_openai(conversation_history):
     completion = client.chat.completions.create(
         model=deployment,
         messages= conversation_history,
-        max_tokens=2000,
+        max_tokens=3000,
         temperature=0,
         top_p=0.5,
         frequency_penalty=0,
