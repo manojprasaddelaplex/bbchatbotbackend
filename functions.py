@@ -3,18 +3,13 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from sqlalchemy import create_engine, text
-from openai import AzureOpenAI
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+import openai
 import os
 import re
 import urllib.parse
 import tiktoken
 
 load_dotenv(".env")
-
-os.environ['AZURE_CLIENT_ID']
-os.environ['AZURE_TENANT_ID']
-os.environ['AZURE_CLIENT_SECRET']
 
 endpoint = os.getenv("ENDPOINT_URL")
 deployment = os.getenv("DEPLOYMENT_NAME")
@@ -23,15 +18,13 @@ search_key = os.getenv("SEARCH_KEY")
 search_index = os.getenv("SEARCH_INDEX_NAME")
 cognitive_service = os.getenv("COGNITIVE_SERVICE")
 api_version = os.getenv("API_VERSION")
+asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
 
-token_provider = get_bearer_token_provider(
-    DefaultAzureCredential(),
-    cognitive_service)
      
-client = AzureOpenAI(
+client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
-    azure_ad_token_provider=token_provider,
+    api_key=asure_openai_api_key,
     api_version=api_version,
 )
 
@@ -90,7 +83,6 @@ def azure_search_openai(conversation_history):
                 "query_type": "semantic",
                 "fields_mapping": {},
                 "in_scope": True,
-                "role_information": "You are an AI assistant that helps people find accurate information.",
                 "filter": None,
                 "strictness": 3,
                 "top_n_documents": 5,
