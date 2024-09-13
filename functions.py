@@ -20,7 +20,8 @@ cognitive_service = os.getenv("COGNITIVE_SERVICE")
 api_version = os.getenv("API_VERSION")
 asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
-#Asure Openai Configurations
+
+     
 client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
     api_key=asure_openai_api_key,
@@ -66,8 +67,8 @@ def azure_search_openai(conversation_history):
         model=deployment,
         messages= conversation_history,
         max_tokens=3000,
-        temperature=0,
-        top_p=0.5,
+        temperature=0.3,
+        top_p=0.95,
         frequency_penalty=0,
         presence_penalty=0,
         stop=None,
@@ -79,15 +80,19 @@ def azure_search_openai(conversation_history):
                 "endpoint": f"{search_endpoint}",
                 "index_name": f"{search_index}",
                 "semantic_configuration": "default",
-                "query_type": "semantic",
+                "query_type": "vector_semantic_hybrid",
                 "in_scope": True,
-                "role_information": "You are an AI assistant that helps to provide accurate SQL query",
+                "role_information": "You are an AI assistant that helps people find information.",
                 "filter": None,
                 "strictness": 3,
                 "top_n_documents": 5,
                 "authentication": {
-                  "type": "api_key",
-                  "key": f"{search_key}"
+                    "type": "api_key",
+                    "key": f"{search_key}"
+                },
+                "embedding_dependency": {
+                    "type": "deployment_name",
+                    "deployment_name": "text-embedding-ada-002-standard"
                 }
               }
             }]
