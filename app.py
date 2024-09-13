@@ -59,19 +59,19 @@ def query_db():
                 base_err = response
                 similar_questions = find_best_matching_user_questions(userQuestion=user_query)
 
-                err = base_err + ("Here are some similar questions that might be helpful for you. " if similar_questions else "") + "Is there anything else I can assist you with?"
+                err = base_err + (" I can assist you in refining your search with similar questions. " if similar_questions else "") + "Is there anything else I can assist you with?"
                 id = insertQueryLog(userQuestion=user_query, Response=response)
 
                 results = {
-                    "error": err,
+                    "text": err,
                     "similar_questions":similar_questions,
                     "id": str(id),
                 }
         
-                return jsonify(results), 500
+                return jsonify(results), 200
+            
             
             sql_query = extractSqlQueryFromResponse(response=response)
-            
             
             #return text
             if sql_query == None:
@@ -85,9 +85,18 @@ def query_db():
         headers, rows = readSqlDatabse(sql_query)
         
         if((len(headers) or len(rows)) == 0):
-            results = {"text":"I found 0 records in database on your search. Please try asking different question or adjust your search criteria."}
-            id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
-            return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
+            base_err = "I found 0 records in database on your search. Please try asking different question or adjust your search criteria. "
+            similar_questions = find_best_matching_user_questions(userQuestion=user_query)
+            err = base_err + (" I can assist you in refining your search with similar questions. " if similar_questions else "") + "Is there anything else I can assist you with?"
+            id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=base_err)
+            results = {
+                "text": err,
+                "similar_questions":similar_questions,
+                "id": str(id),
+                "sql_query":str(sql_query)
+            }
+    
+            return jsonify(results), 200
         
         if re.search(r'\b(chart|graph)\b', user_query_lower):
             chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
