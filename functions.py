@@ -82,7 +82,7 @@ def azure_search_openai(conversation_history):
                 "semantic_configuration": "default",
                 "query_type": "vector_semantic_hybrid",
                 "in_scope": True,
-                "role_information": "You are an AI assistant that helps people find information.",
+                "role_information": "You are an AI assistant specialized in helping users with SQL queries. Your goal is to make only the necessary changes to the SQL query based on the user's question, without altering the overall structure of the query. Always provide the complete, modified SQL query in your response. Ensure your answers are concise and relevant to this purpose.",
                 "filter": None,
                 "strictness": 3,
                 "top_n_documents": 5,
