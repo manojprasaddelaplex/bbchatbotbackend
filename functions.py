@@ -67,8 +67,8 @@ def azure_search_openai(conversation_history):
         model=deployment,
         messages= conversation_history,
         max_tokens=3000,
-        temperature=0,
-        top_p=0.5,
+        temperature=0.3,
+        top_p=0.95,
         frequency_penalty=0,
         presence_penalty=0,
         stop=None,
@@ -80,23 +80,19 @@ def azure_search_openai(conversation_history):
                 "endpoint": f"{search_endpoint}",
                 "index_name": f"{search_index}",
                 "semantic_configuration": "default",
-                "query_type": "semantic",
+                "query_type": "vector_semantic_hybrid",
                 "in_scope": True,
-                "role_information":'''
-                                You are an AI assistant that helps people find information.Use this schema (table_name:column_names_list):
-                                    Referrals: [Id, ReferralDateTime, ReferredBy, CustodyNumber, RegistrationType, ReasonOfArrestOther, FmeRequired, VerballyPhysicallyAbusive, ThreatToFemaleStaff, DateAddedToWaitingList, State, CreatedByUserId, RecipientDetails, ReferralDetails, ReferralCreatedDateTime, CustodyLocationId, DetainedPersonId, RequestedAssessmentOther, ReferralFrom, ProcessedByHCP, CompletedByUserId, ReferralFromOther, PresentingComplaintId, DischargeDateTime, Discharged, Intervention, LocationAfterDischarge, DischargeCompletedByUserId, ProcessedByUserId, LastAction, LastKpiCalculationValue, ReferralStatusUpdateDateTime, BreachReasonOther, IsHcpSide, BreachReasonDateTime, WaitingListCompleteDateTime, RejectionDate, RejectionReason, RejectionReasonOther, ReferralInUpdatedByUserId, ReferralInUpdatedDateTime, OtherConcern, OtherLocation, Maintenance_RegistrationTypeId, LastKpiAssessmentCalculationValue, Maintenance_HcpRequiredTypeId, BreachReasonId, Maintenance_ReasonOfArrestTypeId, Maintenance_CellTypeId]
-                                    HcpPatients: [Id, DetainedPersonId, RegisteredByUserId, DateOfRegistration, Forename, MiddleName, Surname, DateOfBirth, Gender, NhsNumber, Postcode, Address1, Address2, Town, County, TelephoneNumber, MobileNumber, SmartPhone, OtherNumber, Disability, Language, OtherLanguage, SexualOrientation, NhsPdsRawPatientData, ManualPdsUpdateDateTime, AddressAge, ChangeOfAddressCompletedByUserId, ChangeOfAddressDateTime, CorrespondenceAddressOnly, Email, PreferredContact, UseAddressInPatientSearches, IsGenderSameAsRegisteredAtBirth, SexualOrientationOther, Address3, GeneralPractitionerId, LastUpdatedDateTime, LastUpdatedUserId, WorkPhoneNumber, Maintenance_MaritalStatusTypeId, Maintenance_OccupationTypeId, Maintenance_ReligionTypeId, Maintenance_TitleTypeId, Maintenance_EnglishSpeakerTypeId, ArmedForcesTypeId, PlaceOfDetentionTypeId, Maintenance_EthnicityTypeId, Maintenance_DisabilityTypeId, Maintenance_GenderTypeId, Maintenance_LanguageTypeId]
-                                Your answer should strictly be sql queries. 
-                                Modify sql queries provided prior according to user needs and instructions.
-                                The answer should be strictly from the data provided to you.
-                                Do not answer from anywhere outside the data provided.
-                                Give answer to generic questions in natural language.''',
+                "role_information": "You are an AI assistant that helps people find information.",
                 "filter": None,
                 "strictness": 3,
                 "top_n_documents": 5,
                 "authentication": {
-                  "type": "api_key",
-                  "key": f"{search_key}"
+                    "type": "api_key",
+                    "key": f"{search_key}"
+                },
+                "embedding_dependency": {
+                    "type": "deployment_name",
+                    "deployment_name": "text-embedding-ada-002-standard"
                 }
               }
             }]

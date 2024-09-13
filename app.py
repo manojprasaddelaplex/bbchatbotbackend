@@ -21,7 +21,7 @@ conversation_history = [
     {
         "role": "system",
         "content": '''
-        You are Sonar Chatbot, an expert at converting natural language into SQL queries for SQL Server.
+        You are an assistant, expert at converting natural language into SQL queries for SQL Server.
         End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.
         **For similar questions provided:
             Analyze the structure of the given SQL query.
@@ -54,6 +54,7 @@ def query_db():
     try:
         if sql_query==None:
             response = azure_search_openai(conversation_history)
+            print("\nres: ",response,"\n")
             sql_query = extractSqlQueryFromResponse(response=response)
             
             conversation_history.append({"role": "assistant", "content": response if sql_query==None else sql_query})
