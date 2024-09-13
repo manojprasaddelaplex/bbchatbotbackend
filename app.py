@@ -54,7 +54,6 @@ def query_db():
     try:
         if sql_query==None:
             response = azure_search_openai(conversation_history)
-            print("\nres: ",response,"\n")
             
             if response=="The requested information is not available in the retrieved data. Please try another query or topic.":
                 base_err = response
