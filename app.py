@@ -37,16 +37,16 @@ def query_db():
     user_query = request.json.get('query')
     user_query_lower = user_query.lower()
     
-    sql_query = findSqlQueryFromDB(user_query)
+    sql_query = None#findSqlQueryFromDB(user_query)
 
     global conversation_history
-    if sql_query is None:
-        best_match = find_best_matching_user_question_with_sql(user_query)
-        if best_match:
-            conversation_history.extend([
-                {"role": "system", "content": f"Similar question: {best_match['UserQuestion']}"},
-                {"role": "system", "content": f"SQL for similar question: {best_match['SqlQuery']}"}
-            ])
+    # if sql_query is None:
+    #     best_match = find_best_matching_user_question_with_sql(user_query)
+    #     if best_match:
+    #         conversation_history.extend([
+    #             {"role": "system", "content": f"Similar question: {best_match['UserQuestion']}"},
+    #             {"role": "system", "content": f"SQL for similar question: {best_match['SqlQuery']}"}
+    #         ])
 
     conversation_history.append({"role": "user", "content": user_query})
     conversation_history = manage_conversation_length(conversation_history)

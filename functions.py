@@ -165,12 +165,12 @@ def manage_conversation_length(conversation):
     system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
     
     # Check if we need to pop entries to fit within the 7-entry limit
-    if len(conversation) > 4:
+    if len(conversation) > 7:
         # Remove oldest entries until we have only 7
-        conversation = [conversation[0]] + conversation[-3:]  # Keep system prompt and last 6 entries
+        conversation = [conversation[0]] + conversation[-6:]  # Keep system prompt and last 6 entries
     
     # Ensure tokens stay within limit while preserving system prompt
-    while total_tokens > 1050 and system_prompt_index is not None:
+    while total_tokens > 2000 and system_prompt_index is not None:
         if len(conversation) > system_prompt_index + 1:  # Ensure there are entries to pop after the system prompt
             conversation.pop(system_prompt_index + 1)  # Remove the oldest user-assistant exchange
             total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
