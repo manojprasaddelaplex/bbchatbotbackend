@@ -54,13 +54,28 @@ def query_db():
     try:
         if sql_query==None:
             response = azure_search_openai(conversation_history)
-            print("\nres: ",response,"\n")
+            
+            if response=="The requested information is not available in the retrieved data. Please try another query or topic.":
+                base_err = response
+                similar_questions = find_best_matching_user_questions(userQuestion=user_query)
+
+                err = base_err + ("Here are some similar questions that might be helpful for you. " if similar_questions else "") + "Is there anything else I can assist you with?"
+                id = insertQueryLog(userQuestion=user_query, Response=response)
+
+                results = {
+                    "error": err,
+                    "similar_questions":similar_questions,
+                    "id": str(id),
+                }
+        
+                return jsonify(results), 500
+            
             sql_query = extractSqlQueryFromResponse(response=response)
             
-            conversation_history.append({"role": "assistant", "content": response if sql_query==None else sql_query})
             
             #return text
             if sql_query == None:
+                conversation_history.append({"role": "assistant", "content": response if sql_query==None else sql_query})
                 results = {"text":response}
                 id = insertQueryLog(userQuestion=user_query,Response=results)
                 return jsonify({"results":results, "id":str(id)}),200
