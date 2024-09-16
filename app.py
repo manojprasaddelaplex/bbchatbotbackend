@@ -23,11 +23,10 @@ conversation_history = [
         "content": '''
         You are an assistant, expert at converting natural language into SQL queries for SQL Server.
         End all SQL queries with a semicolon. You are strictly prohibited from performing data modification tasks; only fetch data.
+        **For similar questions provided:
+            Analyze the structure of the given SQL query.
+            Adapt it to the current question, maintaining similar structure when appropriate.**
         For non-SQL-related questions, keep your responses brief and relevant to your purpose.
-        **When creating a chart or graph, Analyse the SQL query and modify SQL query to return two columns:
-            The first column should contain labels (e.g., names, forename, categories, dates).
-            The second column should contain the numeric data (e.g., counts, sums, averages, visits) that corresponds to each label in the first column.**
-        **Always ensure the SQL query ends with a semicolon.**
         '''
     }
     ]
@@ -67,7 +66,6 @@ def query_db():
                     "text": err,
                     "similar_questions":similar_questions
                 }
-        
                 return jsonify({"results":results, "id": str(id)}), 200
             
             
@@ -93,25 +91,18 @@ def query_db():
                 "text": err,
                 "similar_questions":similar_questions
             }
-
             return jsonify({"results":results, "id": str(id), "sql_query":str(sql_query)}), 200
         
         if re.search(r'\b(chart|graph)\b', user_query_lower):
-            tip = "Hey there! The data seems a bit too big, and it might get confusing when you download it. Could you try reducing it to less than 10 entries? That downloaded file would be much clearer. Thank you!" if len([str(row[headers[0]]) for row in rows]) >10 else None
-            
             chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
             results = {
                     "labels": [str(row[headers[0]]) for row in rows],
                     "data": [str(row[headers[1]]) for row in rows],
                     "type" : chartType,
-                    "x_axis":str(headers[0]),
-                    "y_axis":str(headers[1]),
-                    "tip":tip
                 }
             id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
             return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
-        
-        
+        #returns data for table
         formatted_rows = [[str(row[header]) for header in headers] for row in rows]
         results = {
                 "headers": headers,
@@ -120,6 +111,9 @@ def query_db():
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
         return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
     
+    # except openai.error.OpenAIError as e:
+    #     id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, exceptionMessage=str(e))
+    #     return jsonify({"error":f"OpenAI Model Error: {str(e)}", "id":str(id), "sql_query":str(sql_query)}), 500
     except SQLAlchemyError as e:
         base_err = "I apologize for the confusion. It seems I misunderstood your question, leading to a response that is not related to the database tables and columns I have access to. "
         similar_questions = find_best_matching_user_questions(userQuestion=user_query)
