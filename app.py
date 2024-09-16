@@ -64,11 +64,9 @@ def query_db():
 
                 results = {
                     "text": err,
-                    "similar_questions":similar_questions,
-                    "id": str(id),
+                    "similar_questions":similar_questions
                 }
-        
-                return jsonify(results), 200
+                return jsonify({"results":results, "id": str(id)}), 200
             
             
             sql_query = extractSqlQueryFromResponse(response=response)
@@ -91,12 +89,9 @@ def query_db():
             id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=base_err)
             results = {
                 "text": err,
-                "similar_questions":similar_questions,
-                "id": str(id),
-                "sql_query":str(sql_query)
+                "similar_questions":similar_questions
             }
-    
-            return jsonify(results), 200
+            return jsonify({"results":results, "id": str(id), "sql_query":str(sql_query)}), 200
         
         if re.search(r'\b(chart|graph)\b', user_query_lower):
             chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
