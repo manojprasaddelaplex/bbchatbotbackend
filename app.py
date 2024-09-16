@@ -66,7 +66,6 @@ def query_db():
                     "text": err,
                     "similar_questions":similar_questions
                 }
-        
                 return jsonify({"results":results, "id": str(id)}), 200
             
             
@@ -92,7 +91,6 @@ def query_db():
                 "text": err,
                 "similar_questions":similar_questions
             }
-
             return jsonify({"results":results, "id": str(id), "sql_query":str(sql_query)}), 200
         
         if re.search(r'\b(chart|graph)\b', user_query_lower):
