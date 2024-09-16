@@ -37,16 +37,16 @@ def query_db():
     user_query = request.json.get('query')
     user_query_lower = user_query.lower()
     
-    sql_query = None#findSqlQueryFromDB(user_query)
+    sql_query = findSqlQueryFromDB(user_query)
 
     global conversation_history
-    # if sql_query is None:
-    #     best_match = find_best_matching_user_question_with_sql(user_query)
-    #     if best_match:
-    #         conversation_history.extend([
-    #             {"role": "system", "content": f"Similar question: {best_match['UserQuestion']}"},
-    #             {"role": "system", "content": f"SQL for similar question: {best_match['SqlQuery']}"}
-    #         ])
+    if sql_query is None:
+        best_match = find_best_matching_user_question_with_sql(user_query)
+        if best_match:
+            conversation_history.extend([
+                {"role": "system", "content": f"Similar question: {best_match['UserQuestion']}"},
+                {"role": "system", "content": f"SQL for similar question: {best_match['SqlQuery']}"}
+            ])
 
     conversation_history.append({"role": "user", "content": user_query})
     conversation_history = manage_conversation_length(conversation_history)
@@ -54,13 +54,28 @@ def query_db():
     try:
         if sql_query==None:
             response = azure_search_openai(conversation_history)
-            print("\nres: ",response,"\n")
-            sql_query = extractSqlQueryFromResponse(response=response)
             
-            conversation_history.append({"role": "assistant", "content": response if sql_query==None else sql_query})
+            if response=="The requested information is not available in the retrieved data. Please try another query or topic.":
+                base_err = response
+                similar_questions = find_best_matching_user_questions(userQuestion=user_query)
+
+                err = base_err + (" I can assist you in refining your search with similar questions. " if similar_questions else "") + "Is there anything else I can assist you with?"
+                id = insertQueryLog(userQuestion=user_query, Response=response)
+
+                results = {
+                    "text": err,
+                    "similar_questions":similar_questions,
+                    "id": str(id),
+                }
+        
+                return jsonify(results), 200
+            
+            
+            sql_query = extractSqlQueryFromResponse(response=response)
             
             #return text
             if sql_query == None:
+                conversation_history.append({"role": "assistant", "content": response if sql_query==None else sql_query})
                 results = {"text":response}
                 id = insertQueryLog(userQuestion=user_query,Response=results)
                 return jsonify({"results":results, "id":str(id)}),200
@@ -70,9 +85,18 @@ def query_db():
         headers, rows = readSqlDatabse(sql_query)
         
         if((len(headers) or len(rows)) == 0):
-            results = {"text":"I found 0 records in database on your search. Please try asking different question or adjust your search criteria."}
-            id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=results)
-            return jsonify({"results":results, "id":str(id), "sql_query":str(sql_query)}),200
+            base_err = "I found 0 records in database on your search. Please try asking different question or adjust your search criteria. "
+            similar_questions = find_best_matching_user_questions(userQuestion=user_query)
+            err = base_err + (" I can assist you in refining your search with similar questions. " if similar_questions else "") + "Is there anything else I can assist you with?"
+            id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=base_err)
+            results = {
+                "text": err,
+                "similar_questions":similar_questions,
+                "id": str(id),
+                "sql_query":str(sql_query)
+            }
+    
+            return jsonify(results), 200
         
         if re.search(r'\b(chart|graph)\b', user_query_lower):
             chartType = 'doughnut' if 'chart' in user_query_lower else 'bar'
