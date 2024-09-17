@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import load_data,preprocess_and_embed_questions,chatbot, insertQueryLog,findSqlQueryFromDB, readSqlDatabse, saveFeedback, extractSqlQueryFromResponse, find_best_matching_user_questions
+from functions import load_data,preprocess_and_embed_questions,chatbot, insertQueryLog, readSqlDatabse, saveFeedback, extractSqlQueryFromResponse, find_best_matching_user_questions
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
@@ -39,7 +39,7 @@ def query_db():
     user_query = request.json.get('query')
     user_query_lower = user_query.lower()
    
-    sql_query = findSqlQueryFromDB(user_query)
+    sql_query = None
    
     try:
         if sql_query==None:

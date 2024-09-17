@@ -12,6 +12,7 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
 
 load_dotenv(".env")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -87,15 +88,6 @@ def saveFeedback(resID,feedback,userQuestion):
         )
 
 
-def findSqlQueryFromDB(userQuestion):
-    result = collection.find_one(
-        {"UserQuestion": userQuestion, "IsCorrect": True},
-        sort=[("timestamp", 1)],  # Sort by timestamp in ascending order
-        projection={"SqlQuery": 1}
-    )
-    return result['SqlQuery'] if result else None
-
-
 def extractSqlQueryFromResponse(response):
     # First, try to extract content from code blocks
     code_block_pattern = r'```(?:sql)?\s*([\s\S]+?)\s*```'
@@ -113,11 +105,7 @@ def extractSqlQueryFromResponse(response):
         return sql_match.group(0).strip()
     else:
         return None
-    
-def estimate_tokens(text):
-    enc = tiktoken.get_encoding("cl100k_base")
-    enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    return len(enc.encode(text))
+
 
 
 def find_best_matching_user_questions(userQuestion):
@@ -147,23 +135,6 @@ def find_best_matching_user_questions(userQuestion):
     except Exception as e:
         return None
 
-    
-def find_best_matching_user_question_with_sql(userQuestion):
-    try:
-        # Perform a text search to find the best matching UserQuestion
-        result = collection.find_one(
-            {
-                "$text": {"$search": userQuestion},  # Use text search for matching
-                "IsCorrect": True,
-                "ExceptionMessage": None
-            },
-            sort=[("score", {"$meta": "textScore"}), ("createdAt", 1)],  # Sort by text score (highest first)
-            projection={"UserQuestion": 1, "SqlQuery": 1, "_id": 0}  # Project UserQuestion and SqlQuery
-        )
-
-        return result if result else None
-    except Exception as e:
-        return None
 
 
 def load_data(sql_files, generic_file):
@@ -224,7 +195,8 @@ def find_in_generic_questions(user_question, generic_questions, generic_embeddin
     
     return None
 
-def get_gpt4_response(user_question, existing_sql=None, context_window=None):
+
+def get_gpt4omini_response(user_question, existing_sql=None, context_window=None):
     if context_window is None:
         context_window = []
     
@@ -233,30 +205,56 @@ def get_gpt4_response(user_question, existing_sql=None, context_window=None):
     
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
-        prompt = f"{context}\nUser Question: {user_question}\nSQL Query: {existing_sql}"
+        prompt = f"{context}\nUser Question: {user_question}\nSQL Query: {existing_sql}\nPlease modify the SQL query to match the user's intent."
     else:
         # If no SQL is found, generate a response using GPT-4
         prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."
 
+    schema1 = readHcpPatientsSchema()
     response = client.chat.completions.create(
         model="gpt-4o-mini-standardv1",
         messages=[
             {"role": "system",
-             "content": '''
-                        You are an expert SQL assistant. Follow these guidelines:
-                        1. Do not alter the original structure of SQL queries. Only make necessary changes in date and time as requested by the user.
-                        2. Do not use the column name other than provided in SQL.
-                        3. End all SQL queries with a semicolon.
-                        4. Perform data retrieval tasks only. Do not modify data.
-                        5. For non-SQL questions, provide brief, relevant responses.
-                        6. When creating charts or graphs:
-                           - Analyze and modify the SQL query to return two columns:
-                             a. First column: labels (e.g., names, categories, dates)
-                             b. Second column: corresponding numeric data (e.g., counts, sums, averages)
-                        7. Provide SQL Server-compatible queries only.
-                        8. Always validate query syntax and structure before presenting.
+             "content": f'''
+                        You are an expert SQL assistant. Please adhere to the following guidelines:
                         
-                        Adhere to these instructions in all interactions.
+                        1. **Query Structure**: Maintain the original structure of SQL queries; only make necessary adjustments to date and time as requested by the user.
+                        
+                        2. **Column Names**: Use only the column names provided in the SQL queries; do not alter or introduce new ones.
+                        
+                        3. **Semicolon Requirement**: End all SQL queries with a semicolon.
+                        
+                        4. **Data Retrieval**: Perform data retrieval tasks exclusively; do not modify any data.
+                        
+                        5. **Response Format**: For non-SQL questions, provide concise and relevant responses.
+                        
+                        6. **Chart and Graph Creation**:
+                           - Modify SQL queries to return exactly two columns:
+                             a. First column: labels (e.g., names, categories, dates).
+                             b. Second column: corresponding numeric data (e.g., counts, sums, averages).
+                        
+                        7. **SQL Server Compatibility**: Generate SQL queries that are compatible with SQL Server only.
+                        
+                        8. **Syntax Validation**: Always validate the syntax and structure of queries before presenting them.
+                        
+                        9. **Function Restrictions**: Avoid using unsupported functions or data types. Specifically, do not use the `DATEPART` function with the `DATEADD` function for `DATE` data types.
+                        
+                        10. **Supported Functions**: Use only supported functions and direct date comparisons.
+                        
+                        11. **Error Handling**:
+                            - Anticipate common SQL errors and provide suggestions to avoid them (e.g., syntax errors, type mismatches).
+                            - Handle the **"Operand type clash: date is incompatible with int"** error by ensuring correct data type usage in expressions, comparisons, and joins involving `DATE` types and integers.
+                            - Include error messages in responses if a generated query is likely to cause issues.
+                            - Suggest testing queries in a controlled environment to identify potential errors before production use.
+                        
+                        13. **Table References**: Ensure all referenced tables exist and are accessible in the database context. Specify table aliases if necessary to avoid ambiguity.
+                        
+                        14. **Filter Conditions**: Clearly specify filter conditions in `WHERE` clauses to ensure accurate data retrieval.
+                        
+                        15. **Ordering Results**: Include `ORDER BY` clauses when appropriate to organize the output logically.
+                        
+                        Please follow these instructions in all interactions to ensure high-quality and accurate outputs.
+
                         '''
              },
             {"role": "user", "content": prompt}
@@ -274,7 +272,7 @@ def chatbot(user_question, sql_question_sql_pairs, generic_questions, sql_questi
     
     if similar_question:
         # If similar question found, modify the SQL query using GPT-4
-        modified_sql = get_gpt4_response(user_question, existing_sql=sql, context_window=context_window)
+        modified_sql = get_gpt4omini_response(user_question, existing_sql=sql, context_window=context_window)
         context_window.append((user_question, modified_sql))  # Update context window
         if len(context_window) > 3:  # Maintain only last 3 interactions
             context_window.popleft()
@@ -293,7 +291,7 @@ def chatbot(user_question, sql_question_sql_pairs, generic_questions, sql_questi
         return answer
     
     # If no match found, ask GPT-4 to generate a response
-    gpt4_response = get_gpt4_response(user_question, context_window=context_window)
+    gpt4_response = get_gpt4omini_response(user_question, context_window=context_window)
     context_window.append((user_question, gpt4_response))  # Update context window
     if len(context_window) > 3:  # Maintain only last 3 interactions
         context_window.popleft()
