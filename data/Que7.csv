@@ -1,0 +1,601 @@
+question,sql
+"What caused these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you explain the reasons for these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the main causes of these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the reasons behind the referral breaches during this period?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you provide details on why these referral breaches occurred?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What factors contributed to these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What was the cause for the referral breaches between Friday and Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you tell me why these referral breaches happened?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What led to these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What are the reasons for the referral breaches from Friday to Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you explain the causes of the referral breaches reported?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the contributing factors to these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What caused the referral breaches during the period from Friday to Monday 0600hrs?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you tell me the cause of these breaches in referral conditions?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What was the underlying reason for the referral breaches during this time?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What led to the referral breaches in this timeframe?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you provide reasons for the referral breaches that occurred?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the causes behind the referral breaches from Friday to 0600hrs Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Why did these referral breaches occur?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you give me an explanation for the causes of these breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the primary reasons for the referral breaches from Friday to Monday morning?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you tell me what caused the referral breaches during this time period?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the reasons for these referral breaches over the weekend?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you explain what caused these breaches in referrals?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What factors led to the referral breaches between Friday and Monday 0600hrs?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Why did the referral breaches occur during this period?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What are the causes of the referral breaches from Friday to Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you provide information on the reasons behind the referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What caused these breaches in referral conditions between Friday and 0600hrs Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What led to the referral breaches over the weekend?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you explain the causes for the breaches reported during this period?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the main reasons for the referral breaches that occurred?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What was the cause of these referral breaches from Friday to Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you share details on why the referral breaches occurred during this period?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What contributed to the referral breaches from Friday until 0600hrs Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you tell me the reason behind these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the factors that caused the referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you provide reasons for why these referral breaches occurred?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What was the underlying cause of these referral breaches from Friday to Monday morning?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you explain the reasons for the breaches in referrals over this weekend?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What led to these breaches in referral conditions from Friday to 0600hrs Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the reasons for the referral breaches between Friday and Monday 0600hrs?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you tell me the cause of these referral breaches that occurred?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the contributing factors to the referral breaches between Friday and Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Why did these breaches in referrals happen from Friday to Monday morning?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you explain the cause behind these referral breaches?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What was the reason for the referral breaches during the period from Friday to 0600hrs Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"Can you provide details on what led to the referral breaches from Friday to Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What were the reasons behind the referral breaches over this period?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
+"What caused the referral breaches between Friday and 0600hrs Monday?","WITH DateRange AS (
+    SELECT 
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 - 11, CAST(GETDATE() AS DATE)) AS StartDate,  -- Adjust - number to choose date
+        DATEADD(DAY, -DATEDIFF(DAY, '19000101', GETDATE()) % 7 + 1, CAST(GETDATE() AS DATE)) AS EndDate  -- Following Monday adjust + number to choose date
+)
+SELECT R.DetainedPersonId, concat(DP.Forename,' ',DP.Surname) as personFullName, R.BreachReasonDateTime, BRT.Name as BreachReasonMain, R.BreachReasonOther
+FROM Referrals R
+join Maintenance_BreachReasonType BRT on R.BreachReasonId = BRT.Id
+join DetainedPersons DP on R.DetainedPersonId = DP.Id
+WHERE  BreachReasonId is not null and R.BreachReasonDateTime BETWEEN 
+ (SELECT StartDate FROM DateRange) AND 
+    DATEADD(HOUR, 6, CAST((SELECT EndDate FROM DateRange) AS DATETIME));"
