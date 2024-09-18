@@ -205,7 +205,7 @@ def get_gpt4omini_response(user_question, existing_sql=None, context_window=None
     
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
-        prompt = f"{context}\nUser Question: {user_question}\nSQL Query: {existing_sql}\nPlease modify the SQL query to match the user's intent."
+        prompt = f"{context}\nUser Question: {user_question}\nSQL Query: {existing_sql}\nPlease modify the SQL query to match the user's intent only if necessary."
     else:
         # If no SQL is found, generate a response using GPT-4
         prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."
