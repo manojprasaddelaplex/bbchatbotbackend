@@ -247,6 +247,14 @@ def get_gpt4omini_response(user_question, existing_sql=None, context_window=None
                             - Include error messages in responses if a generated query is likely to cause issues.
                             - Suggest testing queries in a controlled environment to identify potential errors before production use.
                         
+                        12. **Table Schema**:
+                            - Consider the schema of the tables when generating queries.
+                            - Ensure the correct table structure (e.g., column data types, relationships) is reflected in the SQL.
+                            - Ensure joins between tables are valid and based on primary/foreign key relationships.
+
+                            **Database Schema Overview**:
+                                {schema1}
+                        
                         13. **Table References**: Ensure all referenced tables exist and are accessible in the database context. Specify table aliases if necessary to avoid ambiguity.
                         
                         14. **Filter Conditions**: Clearly specify filter conditions in `WHERE` clauses to ensure accurate data retrieval.
