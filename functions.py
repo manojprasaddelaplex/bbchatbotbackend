@@ -7,12 +7,12 @@ import openai
 import os
 import re
 import urllib.parse
-import tiktoken
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
+
 
 load_dotenv(".env")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -205,7 +205,7 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
     
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
-        prompt = f"Context Window:\n{context}\n\nSimilar Question: {existing_question}\nSQL Query of Similar Question: {existing_sql}\n\nNew User Question: {user_question}\nPlease modify the SQL query to align with the new user question only if needed. Retain the original structure and logic if the query already satisfies the user's intent.\nIf the new user question does not specify a date, use the date from the previous context."
+        prompt = f"Context Window:\n{context}\n\nSimilar Question: {existing_question}\nSQL Query of Similar Question: {existing_sql}\n\nNew User Question: {user_question}\nPlease modify the SQL query to align with the new user question only if needed. Retain the original structure and logic if the query already satisfies the user's intent.\nIf the new user question does not specify a date, use the date from the context window."
     else:
         # If no SQL is found, generate a response using GPT-4
         prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."
