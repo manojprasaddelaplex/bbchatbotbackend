@@ -7,7 +7,12 @@ import openai
 import os
 import re
 import urllib.parse
-import tiktoken
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+import numpy as np
+from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
+
 
 load_dotenv(".env")
 
@@ -207,20 +212,179 @@ def find_best_matching_user_questions(userQuestion):
     except Exception as e:
         return None
 
-    
-def find_best_matching_user_question_with_sql(userQuestion):
-    try:
-        # Perform a text search to find the best matching UserQuestion
-        result = collection.find_one(
-            {
-                "$text": {"$search": userQuestion},  # Use text search for matching
-                "IsCorrect": True,
-                "ExceptionMessage": None
-            },
-            sort=[("score", {"$meta": "textScore"}), ("createdAt", 1)],  # Sort by text score (highest first)
-            projection={"UserQuestion": 1, "SqlQuery": 1, "_id": 0}  # Project UserQuestion and SqlQuery
-        )
 
-        return result if result else None
-    except Exception as e:
-        return None
+
+def load_data(sql_files, generic_file):
+    sql_question_sql_pairs = []
+    
+    # Load SQL-related files, each file has 50 questions and 1 shared SQL query
+    for file in sql_files:
+        df = pd.read_csv(file)
+        questions = df['question'].tolist()
+        sql = df['sql'].iloc[0]  # First SQL applies to all questions in the file
+        sql_question_sql_pairs.append((questions, sql))
+    
+    # Load the generic question-answer pairs
+    generic_df = pd.read_csv(generic_file)
+    generic_questions = generic_df['question'].tolist()
+    generic_answers = generic_df['answer'].tolist()
+
+    return sql_question_sql_pairs, generic_questions, generic_answers
+
+# Embed questions for similarity search
+def preprocess_and_embed_questions(sql_question_sql_pairs, generic_questions):
+    sql_question_embeddings = []
+    for questions, _ in sql_question_sql_pairs:
+        embeddings = embedding_model.encode(questions, convert_to_tensor=True)
+        sql_question_embeddings.append(embeddings)
+    
+    generic_embeddings = embedding_model.encode(generic_questions, convert_to_tensor=True)
+    
+    return sql_question_embeddings, generic_embeddings
+
+# Find the most similar question across all SQL-related files
+def find_similar_question(user_question, sql_question_sql_pairs, sql_question_embeddings, threshold=0.7):
+    user_embedding = embedding_model.encode([user_question], convert_to_tensor=True)
+    
+    # Search each file's questions for similarity
+    for idx, embeddings in enumerate(sql_question_embeddings):
+        similarities = cosine_similarity(user_embedding, embeddings)[0]
+        best_match_idx = np.argmax(similarities)
+        best_similarity = similarities[best_match_idx]
+        
+        # If similarity is above threshold, return the SQL corresponding to this file
+        if best_similarity > threshold:
+            matched_questions, sql = sql_question_sql_pairs[idx]
+            return matched_questions[best_match_idx], sql
+
+    return None, None
+
+# Find similar question in the generic questions file
+def find_in_generic_questions(user_question, generic_questions, generic_embeddings, threshold=0.7):
+    user_embedding = embedding_model.encode([user_question], convert_to_tensor=True)
+    similarities = cosine_similarity(user_embedding, generic_embeddings)[0]
+    best_match_idx = np.argmax(similarities)
+    best_similarity = similarities[best_match_idx]
+
+    # Check if the similarity is above the threshold
+    if best_similarity > threshold:
+        return generic_questions[best_match_idx]
+    
+    return None
+
+
+def get_gpt4omini_response(user_question,existing_question=None, existing_sql=None, context_window=None):
+    if context_window is None:
+        context_window = []
+    
+    # Prepare conversation history (last 3 question-answer pairs)
+    context = "\n".join([f"Q: {qa[0]}\nA: {qa[1]}" for qa in context_window])
+    
+    if existing_sql:
+        # If SQL is provided, modify the SQL query based on the question
+        prompt = f"Context Window:\n{context}\n\nSimilar Question: {existing_question}\nSQL Query of Similar Question: {existing_sql}\n\nNew User Question: {user_question}\nPlease modify the SQL query to align with the new user question only if needed. Retain the original structure and logic if the query already satisfies the user's intent.\nIf the new user question does not specify a date, use the date from the context window."
+    else:
+        # If no SQL is found, generate a response using GPT-4
+        prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."
+
+    schema1 = readHcpPatientsSchema()
+    response = client.chat.completions.create(
+        model="gpt-4o-mini-standardv1",
+        messages=[
+            {"role": "system",
+             "content": f'''
+                        You are an expert SQL assistant. Please adhere to the following guidelines:
+                        
+                        1. **Query Structure**: Maintain the original structure of SQL queries; only make necessary adjustments to date and time as requested by the user or or if there's relevant context from prior questions or conversations.
+                        
+                        2. **Column Names**: Use only the column names provided in the SQL queries; do not alter or introduce new ones.
+                        
+                        3. **Semicolon Requirement**: End all SQL queries with a semicolon.
+                        
+                        4. **Data Retrieval**: Perform data retrieval tasks exclusively; do not modify any data.
+                        
+                        5. **Response Format**: For non-SQL questions, provide concise and relevant responses.
+                        
+                        6. **Chart and Graph Creation**:
+                           - Modify SQL queries to return exactly two columns:
+                             a. First column: labels (e.g., names, categories, dates).
+                             b. Second column: corresponding numeric data (e.g., counts, sums, averages).
+                        
+                        7. **SQL Server Compatibility**: Generate SQL queries that are compatible with SQL Server only.
+                        
+                        8. **Syntax Validation**: Always validate the syntax and structure of queries before presenting them.
+                        
+                        9. **Function Restrictions**: Avoid using unsupported functions or data types. Specifically, do not use the `DATEPART` function with the `DATEADD` function for `DATE` data types.
+                        
+                        10. **Supported Functions**: Use only supported functions and direct date comparisons.
+                        
+                        11. **Error Handling**:
+                            - Anticipate common SQL errors and provide suggestions to avoid them (e.g., syntax errors, type mismatches).
+                            - Handle the **"Operand type clash: date is incompatible with int"** error by ensuring correct data type usage in expressions, comparisons, and joins involving `DATE` types and integers.
+                            - Include error messages in responses if a generated query is likely to cause issues.
+                            - Suggest testing queries in a controlled environment to identify potential errors before production use.
+                        
+                        12. **Table Schema**:
+                            - Consider the schema of the tables when generating queries.
+                            - Ensure the correct table structure (e.g., column data types, relationships) is reflected in the SQL.
+                            - Ensure joins between tables are valid and based on primary/foreign key relationships.
+
+                            **Database Schema Overview**:
+                                {schema1}
+                        
+                        13. **Table References**: Ensure all referenced tables exist and are accessible in the database context. Specify table aliases if necessary to avoid ambiguity.
+                        
+                        14. **Filter Conditions**: Clearly specify filter conditions in `WHERE` clauses to ensure accurate data retrieval.
+                        
+                        15. **Ordering Results**: Include `ORDER BY` clauses when appropriate to organize the output logically.
+                        
+                        Please follow these instructions in all interactions to ensure high-quality and accurate outputs.
+
+                        '''
+             },
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=3000,
+        temperature=0.3,
+        top_p=0.95
+    )
+    input_tokens = response.usage.prompt_tokens
+    output_tokens = response.usage.completion_tokens
+    total_tokens = response.usage.total_tokens
+
+    print(f"Input Tokens: {input_tokens}")
+    print(f"Output Tokens: {output_tokens}")
+    print(f"Total Tokens: {total_tokens}")
+    return response.choices[0].message.content
+
+# Main chatbot function
+def chatbot(user_question, sql_question_sql_pairs, generic_questions, sql_question_embeddings, generic_embeddings, generic_answers, context_window):
+    # Try to find a similar question in SQL-related files
+    similar_question, sql = find_similar_question(user_question, sql_question_sql_pairs, sql_question_embeddings)
+    
+    if similar_question:
+        # If similar question found, modify the SQL query using GPT-4
+        modified_sql = get_gpt4omini_response(user_question,existing_question=similar_question, existing_sql=sql, context_window=context_window)
+        context_window.append((user_question, modified_sql))  # Update context window
+        if len(context_window) > 3:  # Maintain only last 3 interactions
+            context_window.popleft()
+        return modified_sql
+    
+    # If no match in SQL-related files, try the generic questions
+    generic_match = find_in_generic_questions(user_question, generic_questions, generic_embeddings)
+    
+    if generic_match:
+        # Return the corresponding answer from generic answers
+        answer_idx = generic_questions.index(generic_match)
+        answer = generic_answers[answer_idx]
+        context_window.append((user_question, answer))  # Update context window
+        if len(context_window) > 3:  # Maintain only last 3 interactions
+            context_window.popleft()
+        return answer
+    
+    # If no match found, ask GPT-4 to generate a response
+    gpt4_response = get_gpt4omini_response(user_question, context_window=context_window)
+    context_window.append((user_question, gpt4_response))  # Update context window
+    if len(context_window) > 3:  # Maintain only last 3 interactions
+        context_window.popleft()
+    return gpt4_response

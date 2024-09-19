@@ -7,7 +7,17 @@ from functions import insertQueryLog,findSqlQueryFromDB, azure_search_openai, re
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
+from collections import deque
  
+sql_files = ["data\\questions\\Que1.csv", "data\\questions\\Que2.csv", "data\\questions\\Que3.csv", "data\\questions\\Que4.csv", "data\\questions\\Que5.csv", "data\\questions\\Que6.csv", "data\\questions\\Que7.csv", "data\\questions\\Que8.csv", "data\\questions\\Que9.csv", "data\\questions\\Que10.csv", "data\\questions\\Que11.csv", "data\\questions\\Que12.csv", "data\\questions\\Que13.csv", "data\\questions\\Que14.csv"]
+generic_file = "data\\questions\\Generic.csv"
+
+
+sql_question_sql_pairs, generic_questions, generic_answers = load_data(sql_files, generic_file)
+
+# Generate embeddings for SQL-related and generic questions
+sql_question_embeddings, generic_embeddings = preprocess_and_embed_questions(sql_question_sql_pairs, generic_questions)
+
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 swagger = Swagger(app)
