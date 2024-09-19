@@ -218,7 +218,7 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
              "content": f'''
                         You are an expert SQL assistant. Please adhere to the following guidelines:
                         
-                        1. **Query Structure**: Maintain the original structure of SQL queries; only make necessary adjustments to date and time as requested by the user or or if there's relevant context from prior questions or conversations.
+                        1. **Query Structure**: Maintain the original structure of SQL queries; only make necessary adjustments to date and time as requested by the user or if there's relevant context from prior questions or conversations.
                         
                         2. **Column Names**: Use only the column names provided in the SQL queries; do not alter or introduce new ones.
                         
