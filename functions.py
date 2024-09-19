@@ -15,7 +15,6 @@ from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
 
 
 load_dotenv(".env")
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 endpoint = os.getenv("ENDPOINT_URL")
 deployment = os.getenv("DEPLOYMENT_NAME")
@@ -27,11 +26,13 @@ api_version = os.getenv("API_VERSION")
 asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
 
+     
 client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
     api_key=asure_openai_api_key,
     api_version=api_version,
 )
+
 
 #MongoDB Configurations
 clientMongo = MongoClient(os.getenv('CONNECTION_STRING'))
@@ -63,6 +64,46 @@ def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=
     
     insertDocument = collection.insert_one(document=document)
     return insertDocument.inserted_id
+    
+
+
+def azure_search_openai(conversation_history):
+    completion = client.chat.completions.create(
+        model=deployment,
+        messages= conversation_history,
+        max_tokens=3000,
+        temperature=0.3,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None,
+        stream=False,
+        extra_body={
+          "data_sources": [{
+              "type": "azure_search",
+              "parameters": {
+                "endpoint": f"{search_endpoint}",
+                "index_name": f"{search_index}",
+                "semantic_configuration": "default",
+                "query_type": "vector_semantic_hybrid",
+                "in_scope": False,
+                "role_information": "You are an AI assistant specialized in helping users with SQL queries. Your goal is to make only the necessary changes to the SQL query based on the user's question, without altering the overall structure of the query. Always provide the complete, modified SQL query in your response. Ensure your answers are concise and relevant to this purpose.",
+                "filter": None,
+                "strictness": 3,
+                "top_n_documents": 5,
+                "authentication": {
+                    "type": "api_key",
+                    "key": f"{search_key}"
+                },
+                "embedding_dependency": {
+                    "type": "deployment_name",
+                    "deployment_name": "text-embedding-ada-002-standard"
+                }
+              }
+            }]
+        }
+    )
+    return completion.choices[0].message.content
 
 
 def readSqlDatabse(sql_query):
@@ -88,6 +129,15 @@ def saveFeedback(resID,feedback,userQuestion):
         )
 
 
+def findSqlQueryFromDB(userQuestion):
+    result = collection.find_one(
+        {"UserQuestion": userQuestion, "IsCorrect": True},
+        sort=[("timestamp", 1)],  # Sort by timestamp in ascending order
+        projection={"SqlQuery": 1}
+    )
+    return result['SqlQuery'] if result else None
+
+
 def extractSqlQueryFromResponse(response):
     # First, try to extract content from code blocks
     code_block_pattern = r'```(?:sql)?\s*([\s\S]+?)\s*```'
@@ -105,7 +155,34 @@ def extractSqlQueryFromResponse(response):
         return sql_match.group(0).strip()
     else:
         return None
+    
+def estimate_tokens(text):
+    enc = tiktoken.get_encoding("cl100k_base")
+    enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
+    return len(enc.encode(text))
 
+
+def manage_conversation_length(conversation):
+    """Ensure the conversation length stays within token limits and fixed number of entries."""
+    # Calculate total tokens
+    total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+    # System prompt should always be preserved
+    system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
+    
+    # Check if we need to pop entries to fit within the 7-entry limit
+    if len(conversation) > 7:
+        # Remove oldest entries until we have only 7
+        conversation = [conversation[0]] + conversation[-6:]  # Keep system prompt and last 6 entries
+    
+    # Ensure tokens stay within limit while preserving system prompt
+    while total_tokens > 2000 and system_prompt_index is not None:
+        if len(conversation) > system_prompt_index + 1:  # Ensure there are entries to pop after the system prompt
+            conversation.pop(system_prompt_index + 1)  # Remove the oldest user-assistant exchange
+            total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+        else:
+            break  # Exit if there are no more entries to remove after the system prompt
+    
+    return conversation
 
 
 def find_best_matching_user_questions(userQuestion):
