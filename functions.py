@@ -8,14 +8,8 @@ import os
 import re
 import urllib.parse
 import tiktoken
-import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
-import numpy as np
-from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
 
 load_dotenv(".env")
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 endpoint = os.getenv("ENDPOINT_URL")
 deployment = os.getenv("DEPLOYMENT_NAME")
@@ -27,11 +21,13 @@ api_version = os.getenv("API_VERSION")
 asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
 
+     
 client = openai.AzureOpenAI(
     azure_endpoint=endpoint,
     api_key=asure_openai_api_key,
     api_version=api_version,
 )
+
 
 #MongoDB Configurations
 clientMongo = MongoClient(os.getenv('CONNECTION_STRING'))
@@ -63,6 +59,46 @@ def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=
     
     insertDocument = collection.insert_one(document=document)
     return insertDocument.inserted_id
+    
+
+
+def azure_search_openai(conversation_history):
+    completion = client.chat.completions.create(
+        model=deployment,
+        messages= conversation_history,
+        max_tokens=3000,
+        temperature=0.3,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None,
+        stream=False,
+        extra_body={
+          "data_sources": [{
+              "type": "azure_search",
+              "parameters": {
+                "endpoint": f"{search_endpoint}",
+                "index_name": f"{search_index}",
+                "semantic_configuration": "default",
+                "query_type": "vector_semantic_hybrid",
+                "in_scope": False,
+                "role_information": "You are an AI assistant specialized in helping users with SQL queries. Your goal is to make only the necessary changes to the SQL query based on the user's question, without altering the overall structure of the query. Always provide the complete, modified SQL query in your response. Ensure your answers are concise and relevant to this purpose.",
+                "filter": None,
+                "strictness": 3,
+                "top_n_documents": 5,
+                "authentication": {
+                    "type": "api_key",
+                    "key": f"{search_key}"
+                },
+                "embedding_dependency": {
+                    "type": "deployment_name",
+                    "deployment_name": "text-embedding-ada-002-standard"
+                }
+              }
+            }]
+        }
+    )
+    return completion.choices[0].message.content
 
 
 def readSqlDatabse(sql_query):
@@ -88,6 +124,15 @@ def saveFeedback(resID,feedback,userQuestion):
         )
 
 
+def findSqlQueryFromDB(userQuestion):
+    result = collection.find_one(
+        {"UserQuestion": userQuestion, "IsCorrect": True},
+        sort=[("timestamp", 1)],  # Sort by timestamp in ascending order
+        projection={"SqlQuery": 1}
+    )
+    return result['SqlQuery'] if result else None
+
+
 def extractSqlQueryFromResponse(response):
     # First, try to extract content from code blocks
     code_block_pattern = r'```(?:sql)?\s*([\s\S]+?)\s*```'
@@ -105,7 +150,34 @@ def extractSqlQueryFromResponse(response):
         return sql_match.group(0).strip()
     else:
         return None
+    
+def estimate_tokens(text):
+    enc = tiktoken.get_encoding("cl100k_base")
+    enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
+    return len(enc.encode(text))
 
+
+def manage_conversation_length(conversation):
+    """Ensure the conversation length stays within token limits and fixed number of entries."""
+    # Calculate total tokens
+    total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+    # System prompt should always be preserved
+    system_prompt_index = next((i for i, entry in enumerate(conversation) if entry["role"] == "system"), None)
+    
+    # Check if we need to pop entries to fit within the 7-entry limit
+    if len(conversation) > 7:
+        # Remove oldest entries until we have only 7
+        conversation = [conversation[0]] + conversation[-6:]  # Keep system prompt and last 6 entries
+    
+    # Ensure tokens stay within limit while preserving system prompt
+    while total_tokens > 2000 and system_prompt_index is not None:
+        if len(conversation) > system_prompt_index + 1:  # Ensure there are entries to pop after the system prompt
+            conversation.pop(system_prompt_index + 1)  # Remove the oldest user-assistant exchange
+            total_tokens = sum(estimate_tokens(entry["content"]) for entry in conversation)
+        else:
+            break  # Exit if there are no more entries to remove after the system prompt
+    
+    return conversation
 
 
 def find_best_matching_user_questions(userQuestion):
@@ -135,172 +207,20 @@ def find_best_matching_user_questions(userQuestion):
     except Exception as e:
         return None
 
-
-
-def load_data(sql_files, generic_file):
-    sql_question_sql_pairs = []
     
-    # Load SQL-related files, each file has 50 questions and 1 shared SQL query
-    for file in sql_files:
-        df = pd.read_csv(file)
-        questions = df['question'].tolist()
-        sql = df['sql'].iloc[0]  # First SQL applies to all questions in the file
-        sql_question_sql_pairs.append((questions, sql))
-    
-    # Load the generic question-answer pairs
-    generic_df = pd.read_csv(generic_file)
-    generic_questions = generic_df['question'].tolist()
-    generic_answers = generic_df['answer'].tolist()
+def find_best_matching_user_question_with_sql(userQuestion):
+    try:
+        # Perform a text search to find the best matching UserQuestion
+        result = collection.find_one(
+            {
+                "$text": {"$search": userQuestion},  # Use text search for matching
+                "IsCorrect": True,
+                "ExceptionMessage": None
+            },
+            sort=[("score", {"$meta": "textScore"}), ("createdAt", 1)],  # Sort by text score (highest first)
+            projection={"UserQuestion": 1, "SqlQuery": 1, "_id": 0}  # Project UserQuestion and SqlQuery
+        )
 
-    return sql_question_sql_pairs, generic_questions, generic_answers
-
-# Embed questions for similarity search
-def preprocess_and_embed_questions(sql_question_sql_pairs, generic_questions):
-    sql_question_embeddings = []
-    for questions, _ in sql_question_sql_pairs:
-        embeddings = embedding_model.encode(questions, convert_to_tensor=True)
-        sql_question_embeddings.append(embeddings)
-    
-    generic_embeddings = embedding_model.encode(generic_questions, convert_to_tensor=True)
-    
-    return sql_question_embeddings, generic_embeddings
-
-# Find the most similar question across all SQL-related files
-def find_similar_question(user_question, sql_question_sql_pairs, sql_question_embeddings, threshold=0.7):
-    user_embedding = embedding_model.encode([user_question], convert_to_tensor=True)
-    
-    # Search each file's questions for similarity
-    for idx, embeddings in enumerate(sql_question_embeddings):
-        similarities = cosine_similarity(user_embedding, embeddings)[0]
-        best_match_idx = np.argmax(similarities)
-        best_similarity = similarities[best_match_idx]
-        
-        # If similarity is above threshold, return the SQL corresponding to this file
-        if best_similarity > threshold:
-            matched_questions, sql = sql_question_sql_pairs[idx]
-            return matched_questions[best_match_idx], sql
-
-    return None, None
-
-# Find similar question in the generic questions file
-def find_in_generic_questions(user_question, generic_questions, generic_embeddings, threshold=0.7):
-    user_embedding = embedding_model.encode([user_question], convert_to_tensor=True)
-    similarities = cosine_similarity(user_embedding, generic_embeddings)[0]
-    best_match_idx = np.argmax(similarities)
-    best_similarity = similarities[best_match_idx]
-
-    # Check if the similarity is above the threshold
-    if best_similarity > threshold:
-        return generic_questions[best_match_idx]
-    
-    return None
-
-
-def get_gpt4omini_response(user_question, existing_sql=None, context_window=None):
-    if context_window is None:
-        context_window = []
-    
-    # Prepare conversation history (last 3 question-answer pairs)
-    context = "\n".join([f"Q: {qa[0]}\nA: {qa[1]}" for qa in context_window])
-    
-    if existing_sql:
-        # If SQL is provided, modify the SQL query based on the question
-        prompt = f"{context}\nUser Question: {user_question}\nSQL Query: {existing_sql}\nPlease modify the SQL query to match the user's intent only if necessary."
-    else:
-        # If no SQL is found, generate a response using GPT-4
-        prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."
-
-    schema1 = readHcpPatientsSchema()
-    response = client.chat.completions.create(
-        model="gpt-4o-mini-standardv1",
-        messages=[
-            {"role": "system",
-             "content": f'''
-                        You are an expert SQL assistant. Please adhere to the following guidelines:
-                        
-                        1. **Query Structure**: Maintain the original structure of SQL queries; only make necessary adjustments to date and time as requested by the user.
-                        
-                        2. **Column Names**: Use only the column names provided in the SQL queries; do not alter or introduce new ones.
-                        
-                        3. **Semicolon Requirement**: End all SQL queries with a semicolon.
-                        
-                        4. **Data Retrieval**: Perform data retrieval tasks exclusively; do not modify any data.
-                        
-                        5. **Response Format**: For non-SQL questions, provide concise and relevant responses.
-                        
-                        6. **Chart and Graph Creation**:
-                           - Modify SQL queries to return exactly two columns:
-                             a. First column: labels (e.g., names, categories, dates).
-                             b. Second column: corresponding numeric data (e.g., counts, sums, averages).
-                        
-                        7. **SQL Server Compatibility**: Generate SQL queries that are compatible with SQL Server only.
-                        
-                        8. **Syntax Validation**: Always validate the syntax and structure of queries before presenting them.
-                        
-                        9. **Function Restrictions**: Avoid using unsupported functions or data types. Specifically, do not use the `DATEPART` function with the `DATEADD` function for `DATE` data types.
-                        
-                        10. **Supported Functions**: Use only supported functions and direct date comparisons.
-                        
-                        11. **Error Handling**:
-                            - Anticipate common SQL errors and provide suggestions to avoid them (e.g., syntax errors, type mismatches).
-                            - Handle the **"Operand type clash: date is incompatible with int"** error by ensuring correct data type usage in expressions, comparisons, and joins involving `DATE` types and integers.
-                            - Include error messages in responses if a generated query is likely to cause issues.
-                            - Suggest testing queries in a controlled environment to identify potential errors before production use.
-                        
-                        12. **Table Schema**:
-                            - Consider the schema of the tables when generating queries.
-                            - Ensure the correct table structure (e.g., column data types, relationships) is reflected in the SQL.
-                            - Ensure joins between tables are valid and based on primary/foreign key relationships.
-
-                            **Database Schema Overview**:
-                                {schema1}
-                        
-                        13. **Table References**: Ensure all referenced tables exist and are accessible in the database context. Specify table aliases if necessary to avoid ambiguity.
-                        
-                        14. **Filter Conditions**: Clearly specify filter conditions in `WHERE` clauses to ensure accurate data retrieval.
-                        
-                        15. **Ordering Results**: Include `ORDER BY` clauses when appropriate to organize the output logically.
-                        
-                        Please follow these instructions in all interactions to ensure high-quality and accurate outputs.
-
-                        '''
-             },
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=3000,
-        temperature=0.3,
-        top_p=0.95
-    )
-    return response.choices[0].message.content
-
-# Main chatbot function
-def chatbot(user_question, sql_question_sql_pairs, generic_questions, sql_question_embeddings, generic_embeddings, generic_answers, context_window):
-    # Try to find a similar question in SQL-related files
-    similar_question, sql = find_similar_question(user_question, sql_question_sql_pairs, sql_question_embeddings)
-    
-    if similar_question:
-        # If similar question found, modify the SQL query using GPT-4
-        modified_sql = get_gpt4omini_response(user_question, existing_sql=sql, context_window=context_window)
-        context_window.append((user_question, modified_sql))  # Update context window
-        if len(context_window) > 3:  # Maintain only last 3 interactions
-            context_window.popleft()
-        return modified_sql
-    
-    # If no match in SQL-related files, try the generic questions
-    generic_match = find_in_generic_questions(user_question, generic_questions, generic_embeddings)
-    
-    if generic_match:
-        # Return the corresponding answer from generic answers
-        answer_idx = generic_questions.index(generic_match)
-        answer = generic_answers[answer_idx]
-        context_window.append((user_question, answer))  # Update context window
-        if len(context_window) > 3:  # Maintain only last 3 interactions
-            context_window.popleft()
-        return answer
-    
-    # If no match found, ask GPT-4 to generate a response
-    gpt4_response = get_gpt4omini_response(user_question, context_window=context_window)
-    context_window.append((user_question, gpt4_response))  # Update context window
-    if len(context_window) > 3:  # Maintain only last 3 interactions
-        context_window.popleft()
-    return gpt4_response
+        return result if result else None
+    except Exception as e:
+        return None
