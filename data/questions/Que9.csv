@@ -1,5 +1,5 @@
 question,sql
-"Can provide me with demographic analysis of all people seen by Custody Healthcare between 1st January 2024 to today","SELECT 
+Can provide me with demographic analysis of all people seen by Custody Healthcare between 1st January 2024 to today,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -8,7 +8,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you provide a demographic analysis of all people seen by Custody Healthcare from January 1st, 2024, to today?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -18,7 +19,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What is the demographic breakdown of individuals seen by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -28,7 +30,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you give me the demographic details of those seen by Custody Healthcare between January 1st, 2024, and today?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -38,7 +41,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What are the demographics of people who have been seen by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -48,8 +52,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Could you provide a demographic analysis of individuals in Custody Healthcare from January 2024 to today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Could you provide a demographic analysis of individuals in Custody Healthcare from January 2024 to today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -58,7 +63,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you share the demographic profile of people seen by Custody Healthcare from January 1, 2024, to now?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -68,7 +74,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What is the demographic distribution of people in Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -78,8 +85,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you give a demographic overview of those seen by Custody Healthcare between January 1st and today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you give a demographic overview of those seen by Custody Healthcare between January 1st and today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -88,7 +96,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What are the demographic statistics of individuals in Custody Healthcare from January 1, 2024, to now?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -98,8 +107,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you provide the demographic details of people seen by Custody Healthcare since January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you provide the demographic details of people seen by Custody Healthcare since January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -108,7 +118,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What is the breakdown by demographics of those seen by Custody Healthcare from January 1, 2024, to today?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -118,8 +129,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you give a demographic analysis of all those seen by Custody Healthcare from January 2024 until now?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you give a demographic analysis of all those seen by Custody Healthcare from January 2024 until now?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -128,7 +140,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What are the demographics of people served by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -138,8 +151,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you share the demographic profile of people seen by Custody Healthcare since the start of 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you share the demographic profile of people seen by Custody Healthcare since the start of 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -148,8 +162,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What is the demographic makeup of individuals seen by Custody Healthcare from January 2024 to today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What is the demographic makeup of individuals seen by Custody Healthcare from January 2024 to today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -158,7 +173,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you provide a detailed demographic analysis of Custody Healthcare cases since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -168,8 +184,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What are the demographic characteristics of people seen by Custody Healthcare since January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What are the demographic characteristics of people seen by Custody Healthcare since January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -178,7 +195,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you give me the demographic distribution of individuals seen by Custody Healthcare from January 1st, 2024, to today?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -188,8 +206,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What is the demographic breakdown for people seen by Custody Healthcare since January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What is the demographic breakdown for people seen by Custody Healthcare since January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -198,7 +217,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Could you provide a demographic analysis of those seen by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -208,7 +228,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you provide the demographic profile of individuals seen by Custody Healthcare from January 1, 2024, to now?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -218,8 +239,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What is the demographic summary of people seen by Custody Healthcare between January 1st and today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What is the demographic summary of people seen by Custody Healthcare between January 1st and today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -228,7 +250,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you give a demographic report of those seen by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -238,8 +261,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What are the key demographic statistics of individuals seen by Custody Healthcare since the start of 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What are the key demographic statistics of individuals seen by Custody Healthcare since the start of 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -248,7 +272,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you provide a breakdown of the demographics of people seen by Custody Healthcare since January 1, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -258,7 +283,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What is the demographic profile of all people seen by Custody Healthcare between January 1, 2024, and now?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -268,8 +294,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you share the demographic details of individuals seen by Custody Healthcare from January 2024 until today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you share the demographic details of individuals seen by Custody Healthcare from January 2024 until today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -278,7 +305,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What are the demographic trends of people seen by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -288,7 +316,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you give a demographic breakdown of those seen by Custody Healthcare from January 1, 2024, to now?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -298,8 +327,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What is the overall demographic distribution of people seen by Custody Healthcare since January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What is the overall demographic distribution of people seen by Custody Healthcare since January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -308,8 +338,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you provide the demographic analysis for people seen by Custody Healthcare since the beginning of 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you provide the demographic analysis for people seen by Custody Healthcare since the beginning of 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -318,7 +349,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What are the demographic statistics of those seen by Custody Healthcare between January 1st, 2024, and today?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -328,7 +360,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you share the demographic breakdown of individuals seen by Custody Healthcare from January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -338,8 +371,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What is the demographic profile of those seen by Custody Healthcare since the start of January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What is the demographic profile of those seen by Custody Healthcare since the start of January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -348,7 +382,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you provide a demographic summary of all individuals seen by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -358,8 +393,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What is the demographic analysis of people who have been seen by Custody Healthcare since January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What is the demographic analysis of people who have been seen by Custody Healthcare since January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -368,7 +404,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you give the demographic breakdown of people in Custody Healthcare since January 1, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -378,8 +415,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What are the demographics of individuals seen by Custody Healthcare from January 1st to today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What are the demographics of individuals seen by Custody Healthcare from January 1st to today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -388,7 +426,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "Can you provide a demographic analysis of those seen by Custody Healthcare from January 1st, 2024, to today?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -398,7 +437,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What is the demographic profile of people seen by Custody Healthcare from January 1, 2024, until now?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -408,8 +448,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you give a demographic overview of people served by Custody Healthcare since January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you give a demographic overview of people served by Custody Healthcare since January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -418,7 +459,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What is the demographic breakdown of all those seen by Custody Healthcare since January 1, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -428,8 +470,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you provide the demographic details of individuals seen by Custody Healthcare since the start of 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you provide the demographic details of individuals seen by Custody Healthcare since the start of 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -438,7 +481,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What are the key demographic details of people in Custody Healthcare from January 1st, 2024, until today?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -448,8 +492,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you give a demographic report of all people seen by Custody Healthcare from January 2024?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you give a demographic report of all people seen by Custody Healthcare from January 2024?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -458,7 +503,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What is the demographic breakdown of individuals seen by Custody Healthcare since January 1, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -468,8 +514,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you provide a detailed demographic analysis of all individuals served by Custody Healthcare from January 2024 to today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you provide a detailed demographic analysis of all individuals served by Custody Healthcare from January 2024 to today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -478,7 +525,8 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"
 "What are the key demographic trends of people seen by Custody Healthcare since January 1st, 2024?","SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
@@ -488,8 +536,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"Can you share the demographic details of those seen by Custody Healthcare from January 1st to now?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+Can you share the demographic details of those seen by Custody Healthcare from January 1st to now?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -498,8 +547,9 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
-"What is the demographic analysis of individuals seen by Custody Healthcare from January 2024 to today?","SELECT 
+ORDER BY NumberOfReferrals DESC;
+"
+What is the demographic analysis of individuals seen by Custody Healthcare from January 2024 to today?,"SELECT 
     G.[Name],
     COUNT(R.id) AS NumberOfReferrals,
     ROUND(COUNT(R.id) * 100.0 / SUM(COUNT(r.id)) OVER(), 2) AS PercentageOfTotal
@@ -508,4 +558,5 @@ Join DetainedPersons DP on DP.id = R.detainedpersonId
 Join Maintenance_GenderType G on G.Id = DP.Maintenance_GenderTypeId
 WHERE CAST(r.ReferralCreatedDateTime AS DATE) BETWEEN '2024-01-01' and CAST(GETDATE() AS DATE)
 GROUP BY DP.Maintenance_GenderTypeId, G.[Name]
-ORDER BY NumberOfReferrals DESC;"
+ORDER BY NumberOfReferrals DESC;
+"

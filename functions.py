@@ -196,7 +196,7 @@ def find_in_generic_questions(user_question, generic_questions, generic_embeddin
     return None
 
 
-def get_gpt4omini_response(user_question, existing_sql=None, context_window=None):
+def get_gpt4omini_response(user_question,existing_question=None, existing_sql=None, context_window=None):
     if context_window is None:
         context_window = []
     
@@ -205,7 +205,7 @@ def get_gpt4omini_response(user_question, existing_sql=None, context_window=None
     
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
-        prompt = f"{context}\nUser Question: {user_question}\nSQL Query: {existing_sql}\nPlease modify the SQL query to match the user's intent only if necessary."
+        prompt = f"Context Window:\n{context}\n\nSimilar Question: {existing_question}\nSQL Query of Similar Question: {existing_sql}\n\nNew User Question: {user_question}\nPlease modify the SQL query to align with the new user question only if needed. Retain the original structure and logic if the query already satisfies the user's intent.\nIf the new user question does not specify a date, use the date from the previous context."
     else:
         # If no SQL is found, generate a response using GPT-4
         prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."
@@ -218,7 +218,7 @@ def get_gpt4omini_response(user_question, existing_sql=None, context_window=None
              "content": f'''
                         You are an expert SQL assistant. Please adhere to the following guidelines:
                         
-                        1. **Query Structure**: Maintain the original structure of SQL queries; only make necessary adjustments to date and time as requested by the user.
+                        1. **Query Structure**: Maintain the original structure of SQL queries; only make necessary adjustments to date and time as requested by the user or or if there's relevant context from prior questions or conversations.
                         
                         2. **Column Names**: Use only the column names provided in the SQL queries; do not alter or introduce new ones.
                         
@@ -271,6 +271,13 @@ def get_gpt4omini_response(user_question, existing_sql=None, context_window=None
         temperature=0.3,
         top_p=0.95
     )
+    input_tokens = response.usage.prompt_tokens
+    output_tokens = response.usage.completion_tokens
+    total_tokens = response.usage.total_tokens
+
+    print(f"Input Tokens: {input_tokens}")
+    print(f"Output Tokens: {output_tokens}")
+    print(f"Total Tokens: {total_tokens}")
     return response.choices[0].message.content
 
 # Main chatbot function
@@ -280,7 +287,7 @@ def chatbot(user_question, sql_question_sql_pairs, generic_questions, sql_questi
     
     if similar_question:
         # If similar question found, modify the SQL query using GPT-4
-        modified_sql = get_gpt4omini_response(user_question, existing_sql=sql, context_window=context_window)
+        modified_sql = get_gpt4omini_response(user_question,existing_question=similar_question, existing_sql=sql, context_window=context_window)
         context_window.append((user_question, modified_sql))  # Update context window
         if len(context_window) > 3:  # Maintain only last 3 interactions
             context_window.popleft()
