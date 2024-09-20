@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import load_data,preprocess_and_embed_questions,chatbot, insertQueryLog, readSqlDatabse, saveFeedback, extractSqlQueryFromResponse, find_best_matching_user_questions
+from functions import load_data,preprocess_and_embed_questions,chatbot, insertQueryLog, readSqlDatabse, saveFeedback, extractSqlQueryFromResponse, find_best_matching_user_questions, format_headers
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
@@ -96,8 +96,8 @@ def query_db():
                     "labels": [str(row[headers[0]]) for row in rows],
                     "data": [str(row[headers[1]]) for row in rows],
                     "type" : chartType,
-                    "x_axis":str(headers[0]),
-                    "y_axis":str(headers[1]),
+                    "x_axis":format_headers(str(headers[0])),
+                    "y_axis":format_headers(str(headers[1])),
                     "tip":tip
                 }
             id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
@@ -106,7 +106,7 @@ def query_db():
        
         formatted_rows = [[str(row[header]) for header in headers] for row in rows]
         results = {
-                "headers": headers,
+                "headers": format_headers(headers),
                 "rows": formatted_rows,
             }
         id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
