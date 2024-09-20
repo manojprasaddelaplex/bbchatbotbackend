@@ -96,8 +96,8 @@ def query_db():
                     "labels": [str(row[headers[0]]) for row in rows],
                     "data": [str(row[headers[1]]) for row in rows],
                     "type" : chartType,
-                    "x_axis":format_headers(headers[0]),
-                    "y_axis":format_headers(headers[1]),
+                    "x_axis":format_headers(str(headers[0])),
+                    "y_axis":format_headers(str(headers[1])),
                     "tip":tip
                 }
             id = insertQueryLog(userQuestion=user_query, sqlQuery=sql_query, Response=results,isDataFetchedFromDB=True)
