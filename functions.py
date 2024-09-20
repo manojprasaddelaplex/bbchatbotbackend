@@ -222,7 +222,7 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
 
     schema1 = readHcpPatientsSchema()
     response = client.chat.completions.create(
-        model="gpt-4o-mini-standardv1",
+        model=deployment,
         messages=[
             {"role": "system",
              "content": f'''
