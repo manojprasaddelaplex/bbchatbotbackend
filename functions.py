@@ -64,6 +64,16 @@ def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=
     insertDocument = collection.insert_one(document=document)
     return insertDocument.inserted_id
 
+def format_headers(headers):
+    def format_header(header):
+        formatted = re.sub(r'(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])', ' ', header)
+        return formatted
+    
+    if type(headers)==str:
+        return format_header(headers)
+
+    return [format_header(header) for header in headers]
+
 
 def readSqlDatabse(sql_query):
     with engine.connect() as connection:
