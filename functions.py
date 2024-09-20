@@ -17,16 +17,16 @@ from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
 load_dotenv(".env")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-deployment = os.getenv("DEPLOYMENT_ID")
-
-apiKey = os.getenv('OPENAI_API_KEY')
-os.getenv('OPENAI_API_BASE')
-os.getenv('OPENAI_API_TYPE')
-os.getenv('OPENAI_API_VERSION')
+endpoint = os.getenv("ENDPOINT_URL")
+deployment = os.getenv("DEPLOYMENT_NAME")
+api_version = os.getenv("API_VERSION")
+asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
 
-client = openai.OpenAI(
-    api_key=apiKey
+client = openai.AzureOpenAI(
+    azure_endpoint=endpoint,
+    api_key=asure_openai_api_key,
+    api_version=api_version,
 )
 
 #MongoDB Configurations
