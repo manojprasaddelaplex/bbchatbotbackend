@@ -17,20 +17,16 @@ from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
 load_dotenv(".env")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-endpoint = os.getenv("ENDPOINT_URL")
-deployment = os.getenv("DEPLOYMENT_NAME")
-search_endpoint = os.getenv("SEARCH_ENDPOINT")
-search_key = os.getenv("SEARCH_KEY")
-search_index = os.getenv("SEARCH_INDEX_NAME")
-cognitive_service = os.getenv("COGNITIVE_SERVICE")
-api_version = os.getenv("API_VERSION")
-asure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+deployment = os.getenv("DEPLOYMENT_ID")
+
+apiKey = os.getenv('OPENAI_API_KEY')
+os.getenv('OPENAI_API_BASE')
+os.getenv('OPENAI_API_TYPE')
+os.getenv('OPENAI_API_VERSION')
 
 
-client = openai.AzureOpenAI(
-    azure_endpoint=endpoint,
-    api_key=asure_openai_api_key,
-    api_version=api_version,
+client = openai.OpenAI(
+    api_key=apiKey
 )
 
 #MongoDB Configurations
@@ -222,7 +218,7 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
 
     schema1 = readHcpPatientsSchema()
     response = client.chat.completions.create(
-        model="gpt-4o-mini-standardv1",
+        model=deployment,
         messages=[
             {"role": "system",
              "content": f'''
