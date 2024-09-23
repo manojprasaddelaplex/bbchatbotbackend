@@ -12,7 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
-
+from utility.dateExtraction import extract_dates
 
 load_dotenv(".env")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -46,6 +46,10 @@ if isinstance(conn_str, bytes):
 
 conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
 engine = create_engine(conn_url)
+
+def is_follow_up(user_input):
+    keywords = ["then"]
+    return any(keyword in user_input.lower() for keyword in keywords)
 
 def insertQueryLog(userQuestion, sqlQuery=None, Response=None, exceptionMessage=None, 
                      isDataFetchedFromDB=False, isCorrect=None, feedbackDateTime=None):
@@ -221,11 +225,24 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
         context_window = []
     
     # Prepare conversation history (last 3 question-answer pairs)
-    context = "\n".join([f"Q: {qa[0]}\nA: {qa[1]}" for qa in context_window])
+    context = "\n".join([f"Question {i+1}: {qa[0]}\nSQL/Answer of Question {i+1}: {qa[1]}" for i, qa in enumerate(context_window)])
     
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
-        prompt = f"Context Window:\n{context}\n\nSimilar Question: {existing_question}\nSQL Query of Similar Question: {existing_sql}\n\nNew User Question: {user_question}\nPlease modify the SQL query to align with the new user question only if needed. Retain the original structure and logic if the query already satisfies the user's intent.\nIf the new user question does not specify a date, use the date from the context window."
+        prompt = f'''
+        You are tasked with generating an SQL query by updating the datetime and user intent fields.
+        1. First, check if the `New User Question` contains a datetime. If found, use that datetime to update the SQL query.
+        2. If no datetime is found in the `New User Question`, check the latest SQL from `Context Window`. Use the latest datetime found there to update the SQL query.
+        3. If neither the `New User Question` nor the `Context Window` contains a datetime, use the datetime from the `SQL Query` (from the `Similar Question`).
+        4. Do not modify the structure of the SQL query. Only update the datetime and user intent fields.
+        
+        **Context Window:** {context}
+        **Similar Question:** {existing_question}
+        **SQL Query from Similar Question:** {existing_sql}
+        **New User Question:** {user_question}
+        
+        Return the SQL query with the datetime updated accordingly, preserving the structure.
+        '''
     else:
         # If no SQL is found, generate a response using GPT-4
         prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."
@@ -247,27 +264,29 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
                         4. **Data Retrieval**: Perform data retrieval tasks exclusively; do not modify any data.
                         
                         5. **Response Format**: For non-SQL questions, provide concise and relevant responses.
-                        
-                        6. **Chart and Graph Creation**:
+
+                        6. **Please keep the datetime datatype as is and do not convert it to a date datatype.**
+
+                        7. **Chart and Graph Creation**:
                            - Modify SQL queries to return exactly two columns:
                              a. First column: labels (e.g., names, categories, dates).
                              b. Second column: corresponding numeric data (e.g., counts, sums, averages).
                         
-                        7. **SQL Server Compatibility**: Generate SQL queries that are compatible with SQL Server only.
+                        8. **SQL Server Compatibility**: Generate SQL queries that are compatible with SQL Server only.
                         
-                        8. **Syntax Validation**: Always validate the syntax and structure of queries before presenting them.
+                        9. **Syntax Validation**: Always validate the syntax and structure of queries before presenting them.
                         
-                        9. **Function Restrictions**: Avoid using unsupported functions or data types. Specifically, do not use the `DATEPART` function with the `DATEADD` function for `DATE` data types.
+                        10. **Function Restrictions**: Avoid using unsupported functions or data types. Specifically, do not use the `DATEPART` function with the `DATEADD` function for `DATE` data types.
                         
-                        10. **Supported Functions**: Use only supported functions and direct date comparisons.
+                        11. **Supported Functions**: Use only supported functions and direct date comparisons.
                         
-                        11. **Error Handling**:
+                        12. **Error Handling**:
                             - Anticipate common SQL errors and provide suggestions to avoid them (e.g., syntax errors, type mismatches).
                             - Handle the **"Operand type clash: date is incompatible with int"** error by ensuring correct data type usage in expressions, comparisons, and joins involving `DATE` types and integers.
                             - Include error messages in responses if a generated query is likely to cause issues.
                             - Suggest testing queries in a controlled environment to identify potential errors before production use.
                         
-                        12. **Table Schema**:
+                        13. **Table Schema**:
                             - Consider the schema of the tables when generating queries.
                             - Ensure the correct table structure (e.g., column data types, relationships) is reflected in the SQL.
                             - Ensure joins between tables are valid and based on primary/foreign key relationships.
@@ -275,11 +294,11 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
                             **Database Schema Overview**:
                                 {schema1}
                         
-                        13. **Table References**: Ensure all referenced tables exist and are accessible in the database context. Specify table aliases if necessary to avoid ambiguity.
+                        14. **Table References**: Ensure all referenced tables exist and are accessible in the database context. Specify table aliases if necessary to avoid ambiguity.
                         
-                        14. **Filter Conditions**: Clearly specify filter conditions in `WHERE` clauses to ensure accurate data retrieval.
+                        15. **Filter Conditions**: Clearly specify filter conditions in `WHERE` clauses to ensure accurate data retrieval.
                         
-                        15. **Ordering Results**: Include `ORDER BY` clauses when appropriate to organize the output logically.
+                        16. **Ordering Results**: Include `ORDER BY` clauses when appropriate to organize the output logically.
                         
                         Please follow these instructions in all interactions to ensure high-quality and accurate outputs.
 
@@ -291,23 +310,16 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
         temperature=0.3,
         top_p=0.95
     )
-    input_tokens = response.usage.prompt_tokens
-    output_tokens = response.usage.completion_tokens
-    total_tokens = response.usage.total_tokens
-
-    print(f"Input Tokens: {input_tokens}")
-    print(f"Output Tokens: {output_tokens}")
-    print(f"Total Tokens: {total_tokens}")
     return response.choices[0].message.content
 
 # Main chatbot function
 def chatbot(user_question, sql_question_sql_pairs, generic_questions, sql_question_embeddings, generic_embeddings, generic_answers, context_window):
-    # Try to find a similar question in SQL-related files
     similar_question, sql = find_similar_question(user_question, sql_question_sql_pairs, sql_question_embeddings)
-    
+        
     if similar_question:
         # If similar question found, modify the SQL query using GPT-4
         modified_sql = get_gpt4omini_response(user_question,existing_question=similar_question, existing_sql=sql, context_window=context_window)
+        #
         context_window.append((user_question, modified_sql))  # Update context window
         if len(context_window) > 3:  # Maintain only last 3 interactions
             context_window.popleft()
