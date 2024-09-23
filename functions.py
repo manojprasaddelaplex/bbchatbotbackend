@@ -225,7 +225,22 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
     
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
-        prompt = f"Context Window:\n{context}\n\nSimilar Question: {existing_question}\nSQL Query of Similar Question: {existing_sql}\n\nNew User Question: {user_question}\nPlease modify the SQL query to align with the new user question only if needed. Retain the original structure and logic if the query already satisfies the user's intent.\nIf the new user question does not specify a date, use the date from the context window."
+        print("\nexisting que: ",existing_question)
+        print("\nexisting sql: ",existing_sql)
+        prompt = f'''
+        You are tasked with generating an SQL query by updating the datetime and user intent fields.
+        1. First, check if the `New User Question` contains a datetime. If found, use that datetime to update the SQL query.
+        2. If no datetime is found in the `New User Question`, check the latest SQL from `Context Window`. Use the latest datetime found there to update the SQL query.
+        3. If neither the `New User Question` nor the `Context Window` contains a datetime, use the datetime from the `SQL Query` (from the `Similar Question`).
+        4. Do not modify the structure of the SQL query. Only update the datetime and user intent fields.
+        
+        **Context Window:** {context}
+        **Similar Question:** {existing_question}
+        **SQL Query from Similar Question:** {existing_sql}
+        **New User Question:** {user_question}
+        
+        Return the SQL query with the datetime updated accordingly, preserving the structure.
+        '''
     else:
         # If no SQL is found, generate a response using GPT-4
         prompt = f"{context}\nUser Question: {user_question}\nPlease provide a response based on the user's question."

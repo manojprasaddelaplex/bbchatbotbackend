@@ -54,7 +54,7 @@ def query_db():
                             generic_answers=generic_answers,
                             context_window=context_window
                         )
-            
+            print("\ncontext window: ",context_window)
             session['context_window'] = list(context_window)
             
             if response=="The requested information is not available in the retrieved data. Please try another query or topic.":
