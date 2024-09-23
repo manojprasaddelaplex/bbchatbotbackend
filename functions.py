@@ -12,7 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
-
+from utility.dateExtraction import extract_dates
 
 load_dotenv(".env")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -222,11 +222,11 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
     
     # Prepare conversation history (last 3 question-answer pairs)
     context = "\n".join([f"Q: {qa[0]}\nA: {qa[1]}" for qa in context_window])
-    
+    print("\nmaking mod: ",context)
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
-        print("\nexisting que: ",existing_question)
-        print("\nexisting sql: ",existing_sql)
+        # print("\nexisting que: ",existing_question)
+        # print("\nexisting sql: ",existing_sql)
         prompt = f'''
         You are tasked with generating an SQL query by updating the datetime and user intent fields.
         1. First, check if the `New User Question` contains a datetime. If found, use that datetime to update the SQL query.
@@ -310,19 +310,22 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
     output_tokens = response.usage.completion_tokens
     total_tokens = response.usage.total_tokens
 
-    print(f"Input Tokens: {input_tokens}")
-    print(f"Output Tokens: {output_tokens}")
-    print(f"Total Tokens: {total_tokens}")
+    # print(f"Input Tokens: {input_tokens}")
+    # print(f"Output Tokens: {output_tokens}")
+    # print(f"Total Tokens: {total_tokens}")
+    
+    # print("\nres:",response.choices[0].message.content)
     return response.choices[0].message.content
 
 # Main chatbot function
 def chatbot(user_question, sql_question_sql_pairs, generic_questions, sql_question_embeddings, generic_embeddings, generic_answers, context_window):
-    # Try to find a similar question in SQL-related files
     similar_question, sql = find_similar_question(user_question, sql_question_sql_pairs, sql_question_embeddings)
+    print("in chat: ",context_window)
     
     if similar_question:
         # If similar question found, modify the SQL query using GPT-4
         modified_sql = get_gpt4omini_response(user_question,existing_question=similar_question, existing_sql=sql, context_window=context_window)
+        #
         context_window.append((user_question, modified_sql))  # Update context window
         if len(context_window) > 3:  # Maintain only last 3 interactions
             context_window.popleft()
