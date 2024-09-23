@@ -221,7 +221,7 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
         context_window = []
     
     # Prepare conversation history (last 3 question-answer pairs)
-    context = "\n".join([f"Q: {qa[0]}\nA: {qa[1]}" for qa in context_window])
+    context = "\n".join([f"Question {i+1}: {qa[0]}\nSQL/Answer of Question {i+1}: {qa[1]}" for i, qa in enumerate(context_window)])
     print("\nmaking mod: ",context)
     if existing_sql:
         # If SQL is provided, modify the SQL query based on the question
