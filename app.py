@@ -55,9 +55,8 @@ def query_db():
                             context_window=context_window
                         )
             
-            context_window.append(user_query)
             session['context_window'] = list(context_window)
-           
+            
             if response=="The requested information is not available in the retrieved data. Please try another query or topic.":
                 base_err = response
                 similar_questions = find_best_matching_user_questions(userQuestion=user_query)
