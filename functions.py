@@ -179,18 +179,28 @@ def preprocess_and_embed_questions(sql_question_sql_pairs, generic_questions):
 def find_similar_question(user_question, sql_question_sql_pairs, sql_question_embeddings, threshold=0.7):
     user_embedding = embedding_model.encode([user_question], convert_to_tensor=True)
     
-    # Search each file's questions for similarity
+    best_similarity = 0
+    best_question = None
+    best_sql = None
+    
+    # Search all files' questions for similarity
     for idx, embeddings in enumerate(sql_question_embeddings):
         similarities = cosine_similarity(user_embedding, embeddings)[0]
-        best_match_idx = np.argmax(similarities)
-        best_similarity = similarities[best_match_idx]
+        file_best_match_idx = np.argmax(similarities)
+        file_best_similarity = similarities[file_best_match_idx]
         
-        # If similarity is above threshold, return the SQL corresponding to this file
-        if best_similarity > threshold:
+        # Update if this file has a better match
+        if file_best_similarity > best_similarity:
+            best_similarity = file_best_similarity
             matched_questions, sql = sql_question_sql_pairs[idx]
-            return matched_questions[best_match_idx], sql
-
-    return None, None
+            best_question = matched_questions[file_best_match_idx]
+            best_sql = sql
+    
+    # Return the best match if it's above the threshold
+    if best_similarity > threshold:
+        return best_question, best_sql
+    else:
+        return None, None
 
 # Find similar question in the generic questions file
 def find_in_generic_questions(user_question, generic_questions, generic_embeddings, threshold=0.7):

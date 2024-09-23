@@ -1,15 +1,16 @@
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, jsonify, request, redirect, session
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import load_data,preprocess_and_embed_questions,chatbot, insertQueryLog, readSqlDatabse, saveFeedback, extractSqlQueryFromResponse, find_best_matching_user_questions, format_headers
+from functions import load_data, preprocess_and_embed_questions, chatbot, insertQueryLog, readSqlDatabse, saveFeedback, extractSqlQueryFromResponse, find_best_matching_user_questions, format_headers
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
 from collections import deque
- 
-sql_files = ["data/questions/Que1.csv", "data/questions/Que2.csv", "data/questions/Que3.csv", "data/questions/Que4.csv", "data/questions/Que5.csv", "data/questions/Que6.csv", "data/questions/Que7.csv", "data/questions/Que8.csv", "data/questions/Que9.csv", "data/questions/Que10.csv", "data/questions/Que11.csv", "data/questions/Que12.csv", "data/questions/Que13.csv", "data/questions/Que14.csv"]
-generic_file = "data/questions/Generic.csv"
+import uuid
+import secrets
 
+sql_files = [f"data/questions/Que{n}.csv" for n in range(1,15)]
+generic_file = "data/questions/Generic.csv"
 
 sql_question_sql_pairs, generic_questions, generic_answers = load_data(sql_files, generic_file)
 
@@ -17,12 +18,9 @@ sql_question_sql_pairs, generic_questions, generic_answers = load_data(sql_files
 sql_question_embeddings, generic_embeddings = preprocess_and_embed_questions(sql_question_sql_pairs, generic_questions)
 
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)  # Set a secret key for session management
 cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 swagger = Swagger(app)
-
-
-# Initialize context window (this can be per-session for a real application)
-context_window = deque(maxlen=3)
 
  
 @app.route("/")
@@ -35,6 +33,13 @@ def home():
 def query_db():
     user_query = request.json.get('query')
     user_query_lower = user_query.lower()
+    
+    if 'user_id' not in session:
+        session['user_id'] = str(uuid.uuid4())
+        session['context_window'] = []
+
+    # Get the context window for this user
+    context_window = deque(session.get('context_window', []), maxlen=3)
    
     sql_query = None
    
@@ -49,6 +54,9 @@ def query_db():
                             generic_answers=generic_answers,
                             context_window=context_window
                         )
+            
+            context_window.append(user_query)
+            session['context_window'] = list(context_window)
            
             if response=="The requested information is not available in the retrieved data. Please try another query or topic.":
                 base_err = response
