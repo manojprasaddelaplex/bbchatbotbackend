@@ -1,11 +1,13 @@
 from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from flasgger import Swagger, swag_from
-from functions import load_data, preprocess_and_embed_questions, chatbot, insertQueryLog, readSqlDatabse, saveFeedback, extractSqlQueryFromResponse, find_best_matching_user_questions, format_headers,is_follow_up
+from functions import load_data, preprocess_and_embed_questions, chatbot, insertQueryLog, saveFeedback, find_best_matching_user_questions, format_headers,is_follow_up
 from swaggerData import main_swagger, feedback_swagger
 from sqlalchemy.exc import SQLAlchemyError
 import re
 from collections import deque
+from utility.readSqlDatabase import readSqlDatabase
+from utility.extractDataFromBotResponse import extractSqlQueryFromResponse
 
 
 sql_files = [f"data/questions/Que{n}.csv" for n in range(1,15)]
@@ -70,7 +72,7 @@ def query_db():
            
            
             sql_query = extractSqlQueryFromResponse(response=response)
-           
+            
             #return text
             if sql_query == None:
                 results = {"text":response}
@@ -78,18 +80,15 @@ def query_db():
                 return jsonify({"results":results, "id":str(id)}),200
                
                
-        headers, rows = readSqlDatabse(sql_query)
+        headers, rows = readSqlDatabase(sql_query)
        
         if((len(headers) or len(rows)) == 0):
-            base_err = "I found 0 records in database on your search. Please try asking different question or adjust your search criteria. "
-            similar_questions = find_best_matching_user_questions(userQuestion=user_query)
-            err = base_err + (" I can assist you in refining your search with similar questions. " if similar_questions else "") + "Is there anything else I can assist you with?"
+            base_err = "I found 0 records in database on your search."
             id = insertQueryLog(userQuestion=user_query,sqlQuery=sql_query,Response=base_err)
             results = {
-                "text": err,
-                "similar_questions":similar_questions
+                "headers": ["Result"],
+                "rows": [[base_err]]
             }
- 
             return jsonify({"results":results, "id": str(id), "sql_query":str(sql_query)}), 200
        
         if re.search(r'\b(chart|graph)\b', user_query_lower):
