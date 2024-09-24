@@ -12,7 +12,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from utility.readSchema import readHcpPatientsSchema, readPoliceForceSchema
-from utility.dateExtraction import extract_dates
 
 load_dotenv(".env")
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
