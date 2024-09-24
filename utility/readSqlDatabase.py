@@ -3,7 +3,7 @@ from decimal import Decimal
 from datetime import datetime
 import urllib
 
-conn_str = "Driver={ODBC Driver 17 for SQL Server};Server=tcp:blueberry-dbserver.database.windows.net,1433;Database=blueberry-dataportal;Uid=bbadmin;Pwd=Delaplex#1234;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
+conn_str = "Driver={ODBC Driver 17 for SQL Server};Server=tcp:blueberry-dbserver.database.windows.net,1433;Database=custody-portal-obf-2;Uid=bbadmin;Pwd=Delaplex#1234;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
 
 if isinstance(conn_str, bytes):
     conn_str = conn_str.decode('utf-8')  # Convert bytes to string
