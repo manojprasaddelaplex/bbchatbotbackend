@@ -64,6 +64,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'dev_blueberry'
-          slot-name: 'Production'
+          app-name: 'blueberry'
+          slot-name: 'blueberry-dev'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_67F07459B80C44358AC17D1F88E46486 }}
