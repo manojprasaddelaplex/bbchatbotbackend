@@ -21,9 +21,11 @@ def system_prompt():
                         6. **Please keep the datetime datatype as is and do not convert it to a date datatype.**
 
                         7. **Chart and Graph Creation**:
-                           - Modify SQL queries to return exactly two columns:
+                           - **Identify Relevant Columns: Analyze the user's question to determine which columns from the SQL result are most suitable for visual representation based on Question.**
+                           - **Modify SQL queries to return exactly two columns:**
                              a. First column: labels (e.g., names, categories, dates).
                              b. Second column: corresponding numeric data (e.g., counts, sums, averages).
+                           - **Feasibility Check**: If creating a chart or graph from the SQL results is not feasible, provide a such appropreate message in summary section.
                         
                         8. **SQL Server Compatibility**: Generate SQL queries that are compatible with SQL Server only.
                         
@@ -60,7 +62,6 @@ def system_prompt():
                                 - The purpose of the SQL query in relation to the user's question
                                 - What the query results will show
                                 - (If applicable or user asks) Why the provided SQL can't be directly converted to the requested chart/graph format provided above.
-                            - Similar questions: After providing the SQL query and summary, generate 3 similar questions based on the query, with changes in dates or other minor modifications while keeping the original meaning the same.
                         
                         Please follow these instructions in all interactions to ensure high-quality and accurate outputs.
 

@@ -2,11 +2,9 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from sqlalchemy import create_engine, text
 import openai
 import os
 import re
-import urllib.parse
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
@@ -38,14 +36,6 @@ clientMongo = MongoClient(os.getenv('CONNECTION_STRING'))
 DB = clientMongo['ChabotFeedback']
 collection = DB['BBChatBotOnline']
 
-#SQL Server Configurations
-conn_str = os.getenv('SQL_CONNECTION_STRING')
-
-if isinstance(conn_str, bytes):
-    conn_str = conn_str.decode('utf-8')  # Convert bytes to string
-
-conn_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
-engine = create_engine(conn_url)
 
 def is_follow_up(user_input):
     keywords = ["then"]
@@ -79,13 +69,6 @@ def format_headers(headers):
     return [format_header(header) for header in headers]
 
 
-def readSqlDatabse(sql_query):
-    with engine.connect() as connection:
-        result = connection.execute(text(sql_query))
-        rows = [dict(row._mapping) for row in result]
-        headers = list(rows[0].keys()) if rows else []
-    return headers, rows
-
 def saveFeedback(resID,feedback,userQuestion):
     existing_correct = collection.find_one({
         "UserQuestion": userQuestion,
@@ -100,26 +83,6 @@ def saveFeedback(resID,feedback,userQuestion):
                 "FeedbackDateTime": datetime.now().strftime('%d-%m-%Y %H:%M:%S')
             }}
         )
-
-
-def extractSqlQueryFromResponse(response):
-    # First, try to extract content from code blocks
-    code_block_pattern = r'```(?:sql)?\s*([\s\S]+?)\s*```'
-    code_block_match = re.search(code_block_pattern, response, re.IGNORECASE)
-    
-    if code_block_match:
-        sql_content = code_block_match.group(1)
-    else:
-        sql_content = response
-    
-    sql_pattern = r'(WITH|SELECT)[\s\S]+?;'
-    sql_match = re.search(sql_pattern, sql_content, re.IGNORECASE | re.MULTILINE)
-    
-    if sql_match:
-        return sql_match.group(0).strip()
-    else:
-        return None
-
 
 
 def find_best_matching_user_questions(userQuestion):
@@ -245,7 +208,7 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
         temperature=0.3,
         top_p=0.95
     )
-    print("\nres: ",response.choices[0].message.content)
+    
     return response.choices[0].message.content
 
 # Main chatbot function
