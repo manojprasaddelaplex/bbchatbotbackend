@@ -208,7 +208,6 @@ def get_gpt4omini_response(user_question,existing_question=None, existing_sql=No
         temperature=0.3,
         top_p=0.95
     )
-    
     return response.choices[0].message.content
 
 # Main chatbot function

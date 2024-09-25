@@ -2,8 +2,9 @@ from sqlalchemy import text, create_engine
 from decimal import Decimal
 from datetime import datetime
 import urllib
+import os
 
-conn_str = "Driver={ODBC Driver 17 for SQL Server};Server=tcp:blueberry-dbserver.database.windows.net,1433;Database=custody-portal-obf-2;Uid=bbadmin;Pwd=Delaplex#1234;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
+conn_str = os.getenv('SQL_CONNECTION_STRING')
 
 if isinstance(conn_str, bytes):
     conn_str = conn_str.decode('utf-8')  # Convert bytes to string
@@ -23,4 +24,8 @@ def readSqlDatabase(sql_query):
                     row[key] = round(value, 2)  # Round the decimal value to 2 decimal places
                 elif isinstance(value, datetime):  # Check if the value is a datetime object
                     row[key] = value.strftime('%d/%m/%Y')  # Format date into UK format DD/MM/YYYY
+                elif key == 'ReferralHour':  # Check for 'ReferralHour' column
+                    row[key] = f'{int(value):02}:00'
+
     return headers, rows
+
