@@ -28,3 +28,4 @@ def readSqlDatabase(sql_query):
                     row[key] = f'{int(value):02}:00'
 
     return headers, rows
+
