@@ -1,9 +1,8 @@
 import re
 
 def extract_summary(response):
-    lines = response.splitlines()
-    print(response)
-    summary = ""
+    lines = response.split("\n")
+    summary = ''
     for line in lines:
         if line.strip().startswith("**Summary**:"):
             summary = line.strip().replace("**Summary**: ", "")
